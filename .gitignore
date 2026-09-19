@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+build/cache/
+widgets/screenshots/
+CONTRACT.md

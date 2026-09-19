@@ -1,0 +1,115 @@
+{
+ "note": "Every competition file the build touches. Loading any of them needs nothing but the pandas call given here.",
+ "files": {
+  "cyp_inhibition": {
+   "repo": "openadmet/cyp-challenge-train-test",
+   "file": "cyp-challenge-TRAIN_inhibition.csv",
+   "url": "https://huggingface.co/datasets/openadmet/cyp-challenge-train-test/resolve/main/cyp-challenge-TRAIN_inhibition.csv",
+   "license": "apache-2.0",
+   "structure_column": "SMILES",
+   "identifier_column": "Molecule_Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/cyp-challenge-train-test/resolve/main/cyp-challenge-TRAIN_inhibition.csv\")",
+   "joined_into_measured_csv": true,
+   "description": "Fitted dose-response pIC50 for CYP1A2, CYP2C9, CYP2D6 and CYP3A4, one row per compound, 4,905 compounds."
+  },
+  "cyp_tdi": {
+   "repo": "openadmet/cyp-challenge-train-test",
+   "file": "cyp-challenge-TRAIN_TDI.csv",
+   "url": "https://huggingface.co/datasets/openadmet/cyp-challenge-train-test/resolve/main/cyp-challenge-TRAIN_TDI.csv",
+   "license": "apache-2.0",
+   "structure_column": "SMILES",
+   "identifier_column": "Molecule_Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/cyp-challenge-train-test/resolve/main/cyp-challenge-TRAIN_TDI.csv\")",
+   "joined_into_measured_csv": true,
+   "description": "pIC50 measured after a 30-minute preincubation with active enzyme, plus the CYP2D6 and CYP3A4 time-dependent-inhibition flags."
+  },
+  "cyp_single": {
+   "repo": "openadmet/cyp-challenge-train-test",
+   "file": "cyp-challenge-single-concentration-TRAIN.csv",
+   "url": "https://huggingface.co/datasets/openadmet/cyp-challenge-train-test/resolve/main/cyp-challenge-single-concentration-TRAIN.csv",
+   "license": "apache-2.0",
+   "structure_column": "SMILES",
+   "identifier_column": "Molecule_Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/cyp-challenge-train-test/resolve/main/cyp-challenge-single-concentration-TRAIN.csv\")",
+   "joined_into_measured_csv": true,
+   "description": "Primary screen: every compound against all four enzymes at one concentration, reported as log2 fold change against control."
+  },
+  "octant_inhibition": {
+   "repo": "openadmet/Octant_CYP_inhibition_reactivity_blog_release",
+   "file": "inhibition.tsv",
+   "url": "https://huggingface.co/datasets/openadmet/Octant_CYP_inhibition_reactivity_blog_release/resolve/main/inhibition.tsv",
+   "license": "cc-by-4.0",
+   "structure_column": "standardized_smiles",
+   "identifier_column": "ocnt_batch",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/Octant_CYP_inhibition_reactivity_blog_release/resolve/main/inhibition.tsv\", sep=\"\\t\")",
+   "joined_into_measured_csv": true,
+   "description": "A second CYP3A4 inhibition platform, 1,340 compounds, with curve-level and plate-level quality flags."
+  },
+  "pxr_train": {
+   "repo": "openadmet/pxr-challenge-train-test",
+   "file": "pxr-challenge_TRAIN.csv",
+   "url": "https://huggingface.co/datasets/openadmet/pxr-challenge-train-test/resolve/main/pxr-challenge_TRAIN.csv",
+   "license": "cc-by-4.0",
+   "structure_column": "SMILES",
+   "identifier_column": "Molecule Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/pxr-challenge-train-test/resolve/main/pxr-challenge_TRAIN.csv\")",
+   "joined_into_measured_csv": true,
+   "description": "Fitted pEC50 for activation of the pregnane X receptor, the receptor that drives CYP3A induction, 4,139 compounds."
+  },
+  "pxr_counter": {
+   "repo": "openadmet/pxr-challenge-train-test",
+   "file": "pxr-challenge_counter-assay_TRAIN.csv",
+   "url": "https://huggingface.co/datasets/openadmet/pxr-challenge-train-test/resolve/main/pxr-challenge_counter-assay_TRAIN.csv",
+   "license": "cc-by-4.0",
+   "structure_column": "SMILES",
+   "identifier_column": "Molecule Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/pxr-challenge-train-test/resolve/main/pxr-challenge_counter-assay_TRAIN.csv\")",
+   "joined_into_measured_csv": true,
+   "description": "The same reporter plate without the PXR receptor, so a compound that scores here is hitting the readout rather than the target."
+  },
+  "octant_reactivity": {
+   "repo": "openadmet/Octant_CYP_inhibition_reactivity_blog_release",
+   "file": "reactivity.tsv",
+   "url": "https://huggingface.co/datasets/openadmet/Octant_CYP_inhibition_reactivity_blog_release/resolve/main/reactivity.tsv",
+   "license": "cc-by-4.0",
+   "structure_column": null,
+   "identifier_column": "ocnt_batch",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/Octant_CYP_inhibition_reactivity_blog_release/resolve/main/reactivity.tsv\", sep=\"\\t\")",
+   "joined_into_measured_csv": false,
+   "description": "Substrate depletion by CYP3A4 and CYP2J2. Keyed by batch identifier only, with no structure column, so it joins through inhibition.tsv."
+  },
+  "octant_inhibition_wells": {
+   "repo": "openadmet/Octant_CYP_inhibition_reactivity_blog_release",
+   "file": "inhibition_wells.tsv",
+   "url": "https://huggingface.co/datasets/openadmet/Octant_CYP_inhibition_reactivity_blog_release/resolve/main/inhibition_wells.tsv",
+   "license": "cc-by-4.0",
+   "structure_column": "standardized_smiles",
+   "identifier_column": "ocnt_batch",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/Octant_CYP_inhibition_reactivity_blog_release/resolve/main/inhibition_wells.tsv\", sep=\"\\t\")",
+   "joined_into_measured_csv": false,
+   "description": "Every well behind inhibition.tsv, including the control wells. This is where ketoconazole lives: 648 wells labelled Positive Control, and no fitted value anywhere."
+  },
+  "erx_train": {
+   "repo": "openadmet/openadmet-expansionrx-challenge-train-data",
+   "file": "expansion_data_train.csv",
+   "url": "https://huggingface.co/datasets/openadmet/openadmet-expansionrx-challenge-train-data/resolve/main/expansion_data_train.csv",
+   "license": "cc-by-4.0",
+   "structure_column": "SMILES",
+   "identifier_column": "Molecule Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/openadmet-expansionrx-challenge-train-data/resolve/main/expansion_data_train.csv\")",
+   "joined_into_measured_csv": false,
+   "description": "ExpansionRx ADMET series. The Hugging Face card gates downloads behind a form, but the resolve URL serves anonymously; nothing in it is an approved drug, so no row joins."
+  },
+  "asap_admet": {
+   "repo": "openadmet/ASAP_Polaris_OpenADMET_challenge",
+   "file": "ADMET.csv",
+   "url": "https://huggingface.co/datasets/openadmet/ASAP_Polaris_OpenADMET_challenge/resolve/main/ADMET.csv",
+   "license": "mit",
+   "structure_column": "CXSMILES",
+   "identifier_column": "Molecule Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/ASAP_Polaris_OpenADMET_challenge/resolve/main/ADMET.csv\")",
+   "joined_into_measured_csv": false,
+   "description": "ASAP antiviral series. Shares two structures with the CYP files and one with PXR, so there is no cross-dataset story."
+  }
+ }
+}

@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400..700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+/* Type is defined once here. Marimo ships Lora for headings and PT Sans for
+   body; both are replaced. Literata carries an optical size axis, so headings
+   tighten as they grow. IBM Plex Mono appears only on figures that line up in a
+   column. */
+:root {
+  --nb-serif: Literata, Georgia, "Times New Roman", serif;
+  --nb-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --nb-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --nb-measure: 68ch;
+
+  /* Marimo reads these three for every heading, paragraph and code span. */
+  --heading-font: var(--nb-serif);
+  --text-font: var(--nb-sans);
+  --monospace-font: var(--nb-mono);
+}
+
+.markdown,
+.markdown p,
+.markdown li,
+.markdown td,
+.markdown th {
+  font-family: var(--nb-sans);
+  font-size: 1.02rem;
+  line-height: 1.65;
+}
+
+.markdown p,
+.markdown ul,
+.markdown ol {
+  max-width: var(--nb-measure);
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3,
+.markdown h4 {
+  font-family: var(--nb-serif);
+  font-optical-sizing: auto;
+  font-weight: 600;
+  line-height: 1.15;
+  text-wrap: balance;
+  max-width: 34ch;
+}
+
+.markdown h1 {
+  font-size: 2.45rem;
+  font-variation-settings: "opsz" 48;
+  margin-bottom: 0.6rem;
+}
+
+.markdown h2 {
+  font-size: 1.62rem;
+  font-variation-settings: "opsz" 28;
+  margin-top: 2.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown h3 {
+  font-size: 1.22rem;
+  font-variation-settings: "opsz" 18;
+  margin-top: 2rem;
+}
+
+.markdown strong {
+  font-weight: 600;
+}
+
+/* Every number that sits in a column of other numbers lines up. */
+table,
+.mo-table,
+[data-testid="marimo-plugin-data-table"] {
+  font-family: var(--nb-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+table td:not(:first-child),
+.mo-table td:not(:first-child) {
+  font-family: var(--nb-mono);
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
