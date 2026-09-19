@@ -97,6 +97,48 @@ def _(DATA, mo, pd):
 
 
 @app.cell(hide_code=True)
+def _(
+    Cabinet,
+    Gate,
+    Guess,
+    StereoEditor,
+    catalog_records,
+    gate_readout,
+    guess_rounds,
+    mo,
+    pair_records,
+    stereo_readout,
+):
+    # All four widgets are constructed together, with no slow work between them.
+    # Marimo issue #10494 loses a widget's model on a cold boot when their
+    # creation is spaced out by roughly half a second or more, which is exactly
+    # what interleaving these with pandas work used to do.
+    gate_widget = Gate(blockade=0.0, readout=gate_readout(0.0))
+    cabinet_widget = Cabinet(
+        catalog=catalog_records,
+        pair_index=pair_records,
+        shelf=["simvastatin", "clarithromycin", "ibuprofen"],
+    )
+    guess_widget = Guess(rounds=guess_rounds)
+    stereo_widget = StereoEditor(readout=stereo_readout("quinine"))
+
+    gate = mo.ui.anywidget(gate_widget)
+    cabinet = mo.ui.anywidget(cabinet_widget)
+    guess = mo.ui.anywidget(guess_widget)
+    stereo = mo.ui.anywidget(stereo_widget)
+    return (
+        cabinet,
+        cabinet_widget,
+        gate,
+        gate_widget,
+        guess,
+        guess_widget,
+        stereo,
+        stereo_widget,
+    )
+
+
+@app.cell(hide_code=True)
 def _(mo):
     mo.md(
         r"""
@@ -125,11 +167,9 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(Gate, gate_readout, mo):
-    gate_widget = Gate(blockade=0.0, readout=gate_readout(0.0))
-    gate = mo.ui.anywidget(gate_widget)
+def _(gate):
     gate
-    return gate, gate_widget
+    return
 
 
 @app.cell(hide_code=True)
@@ -208,16 +248,9 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(Cabinet, catalog_records, mo, pair_records):
-    cabinet = mo.ui.anywidget(
-        Cabinet(
-            catalog=catalog_records,
-            pair_index=pair_records,
-            shelf=["simvastatin", "clarithromycin", "ibuprofen"],
-        )
-    )
+def _(cabinet):
     cabinet
-    return (cabinet,)
+    return
 
 
 @app.cell(hide_code=True)
@@ -251,6 +284,14 @@ def _(drugs, fda_roles, measured, name_of):
         "weak": (1.25, 2.0),
     }
 
+    _direct = measured[measured.endpoint == "pIC50_direct"]
+    POTENCY = {
+        (row.drug_id, row.enzyme): float(row.value) for row in _direct.itertuples()
+    }
+    ROLES_BY_DRUG = {
+        drug_id: frame for drug_id, frame in fda_roles.groupby("drug_id")
+    }
+
     def fitted_potency(drug_id: str, enzyme: str) -> float | None:
         """The fitted pIC50 for one drug against one enzyme, or None.
 
@@ -258,16 +299,11 @@ def _(drugs, fda_roles, measured, name_of):
         CYP3A4 alone, so the two labels are matched here deliberately.
         """
         assay_enzyme = "CYP3A4" if enzyme == "CYP3A" else enzyme
-        hit = measured[
-            (measured.drug_id == drug_id)
-            & (measured.enzyme == assay_enzyme)
-            & (measured.endpoint == "pIC50_direct")
-        ]
-        return None if hit.empty else float(hit.value.iloc[0])
+        return POTENCY.get((drug_id, assay_enzyme))
 
     def evidence_state(drug_id: str) -> str:
-        roles = fda_roles[fda_roles.drug_id == drug_id]
-        if roles.empty:
+        roles = ROLES_BY_DRUG.get(drug_id)
+        if roles is None:
             return "unknown"
         measured_here = any(
             fitted_potency(drug_id, enzyme) is not None for enzyme in roles.enzyme
@@ -275,8 +311,8 @@ def _(drugs, fda_roles, measured, name_of):
         return "measured" if measured_here else "documented"
 
     def sublabel(drug_id: str) -> str:
-        roles = fda_roles[fda_roles.drug_id == drug_id]
-        if roles.empty:
+        roles = ROLES_BY_DRUG.get(drug_id)
+        if roles is None:
             return "No enzyme role on record with FDA."
         first = roles.iloc[0]
         template = ROLE_SENTENCE.get((first.role, first.strength))
@@ -376,10 +412,9 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(Guess, guess_rounds, mo):
-    guess = mo.ui.anywidget(Guess(rounds=guess_rounds))
+def _(guess):
     guess
-    return (guess,)
+    return
 
 
 @app.cell(hide_code=True)
@@ -723,10 +758,9 @@ def _(mo):
 
 
 @app.cell(hide_code=True)
-def _(StereoEditor, mo, stereo_readout):
-    stereo = mo.ui.anywidget(StereoEditor(readout=stereo_readout("quinine")))
+def _(stereo):
     stereo
-    return (stereo,)
+    return
 
 
 @app.cell(hide_code=True)
