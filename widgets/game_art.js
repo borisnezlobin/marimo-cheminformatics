@@ -38,6 +38,12 @@
  * silhouettes the scene uses, at card size, so a shape learnt on a compound
  * card is recognised in the scene. They key off the data build's gate ids.
  *
+ * GATE FLAGS. Besides `open`, `jammed` and `holding`, each gate may carry
+ * `untested: true` (no measurement exists) and `edge: true` (the measurement
+ * sits at or past the limit of the assay). The first is drawn unresolved, the
+ * second as resolved but against a stop, and neither implies better or worse,
+ * because a censored reading can be either depending on the gate.
+ *
  * COST. The environment is baked into an offscreen canvas once per size and
  * theme, so a frame is one image blit plus a few hundred small paths. No
  * shadowBlur in the loop except the banner; glows are pre-rendered sprites.
@@ -326,9 +332,17 @@ function stripConnectors(ctx, P, s) {
 }
 
 /* One station, drawn as an outline that fills from the bottom. `fill` is 0 to
- * 1: an empty glyph is hatched, so the state survives without colour. */
-export function drawStationGlyph(ctx, station, box, fill, palette) {
+ * 1: an empty glyph is hatched, so the state survives without colour. `flags`
+ * takes the gate's own `{untested, edge}`: an untested station is drawn with a
+ * broken outline and no fill, because nothing is known, and a station at the
+ * limit of the assay keeps its fill and gains a stop bar with hatched ground
+ * past it. Neither says better or worse. */
+export function drawStationGlyph(ctx, station, box, fill, palette, flags) {
   const P = palette;
+  if (flags?.untested) {
+    drawUntestedGlyph(ctx, P, station, box);
+    return;
+  }
   const shape = GLYPH_SHAPES[stationShape(station)] || GLYPH_SHAPES.dissolve;
   // Every measurement arrives as one of five bands, so the fill shows fifths.
   const level = Math.round(clamp(fill, 0, 1) * 5) / 5;
@@ -353,17 +367,51 @@ export function drawStationGlyph(ctx, station, box, fill, palette) {
   ctx.strokeStyle = withAlpha(P.ink, 0.72);
   ctx.lineWidth = Math.max(1, box.h * 0.055);
   ctx.stroke();
-  const mark = GLYPH_MARKS[station];
+  const mark = GLYPH_MARKS[stationShape(station)];
   if (mark) {
     ctx.strokeStyle = withAlpha(P.ink, 0.55);
     ctx.lineWidth = Math.max(0.8, box.h * 0.04);
     mark(ctx, box);
   }
+  if (flags?.edge) glyphLimit(ctx, P, box);
+  ctx.restore();
+}
+
+function drawUntestedGlyph(ctx, P, station, box) {
+  const shape = GLYPH_SHAPES[stationShape(station)] || GLYPH_SHAPES.dissolve;
+  ctx.save();
+  ctx.setLineDash([Math.max(2, box.h * 0.1), Math.max(2, box.h * 0.09)]);
+  ctx.lineWidth = Math.max(1, box.h * 0.055);
+  ctx.strokeStyle = withAlpha(P.ink, 0.5);
+  shape(ctx, box);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+/* The scale runs out here: a bar across the glyph with hatched ground past it,
+ * drawn the same at top and bottom so it points in no direction. */
+function glyphLimit(ctx, P, box) {
+  const bar = Math.max(1.5, box.h * 0.07);
+  ctx.save();
+  ctx.fillStyle = withAlpha(P.ink, 0.85);
+  ctx.fillRect(box.x - 1, box.y - bar, box.w + 2, bar);
+  ctx.fillRect(box.x - 1, box.y + box.h, box.w + 2, bar);
+  ctx.strokeStyle = withAlpha(P.ink, 0.45);
+  ctx.lineWidth = 1;
+  for (let x = box.x - 3; x < box.x + box.w; x += 3.5) {
+    ctx.beginPath();
+    ctx.moveTo(x, box.y - bar - 1);
+    ctx.lineTo(x + 3, box.y - bar - 4);
+    ctx.moveTo(x, box.y + box.h + bar + 1);
+    ctx.lineTo(x + 3, box.y + box.h + bar + 4);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
 /* The five stations in order with the run drawn through them, for a card. */
-export function drawJourneyStrip(ctx, box, fills, palette) {
+export function drawJourneyStrip(ctx, box, fills, palette, flags) {
   const P = palette;
   const n = STATIONS.length;
   const size = Math.min(box.h, box.w / (n * 1.55));
@@ -378,7 +426,7 @@ export function drawJourneyStrip(ctx, box, fills, palette) {
     const station = STATIONS[i];
     const value = fills?.[station] ?? 0;
     const cell = { x: box.x + (size + gap) * i, y: cy - size / 2, w: size, h: size };
-    drawStationGlyph(ctx, station, cell, alive ? value : 0, P);
+    drawStationGlyph(ctx, station, cell, alive ? value : 0, P, flags?.[station]);
     if (value < 0.12) alive = false;
   }
   ctx.restore();
@@ -1458,6 +1506,132 @@ export function drawDissolveChamber(ctx, P, L, t, gate) {
   ctx.restore();
 }
 
+/* ------------------------------------------------- unresolved and at the limit
+ *
+ * Every gate the engine publishes carries two flags besides its opening.
+ * `untested` means no measurement exists, so the gate is drawn unsettled: a
+ * dashed ring that drifts, doubled slightly out of register, because the
+ * picture itself has not made up its mind. `edge` means the measurement ran
+ * off the end of the instrument's range, which is a resolved reading pinned
+ * against a limit, so the gate gets a hard stop bar with the unmeasurable
+ * territory hatched beyond it. Neither marking says better or worse: a reading
+ * past the limit can be either, depending on the gate, and the picture must
+ * not claim to know which.
+ */
+
+export function stationBox(L, key) {
+  const s = L.stomach;
+  const c = L.channel;
+  const boxes = {
+    dissolve: { x: s.x - 6, y: s.y - 6, w: s.w + 12, h: s.h + 12 },
+    gut: { x: L.gut.x - 6, y: c.cy - c.half - 10, w: L.gut.w + 12, h: c.half * 2 + 20 },
+    pump: { x: L.pump.x - 5, y: L.pump.y - 5, w: L.pump.w + 10, h: L.pump.h + 10 },
+    liver: {
+      x: L.gate.cx - L.gate.r * 1.35,
+      y: c.cy - c.half - 14,
+      w: L.gate.r * 2.7,
+      h: c.half * 2 + 28,
+    },
+    binding: {
+      x: L.field.x0,
+      y: c.cy - c.half + 2,
+      w: L.field.x1 - L.field.x0,
+      h: c.half * 2 - 4,
+    },
+    target: {
+      x: L.target.cx - L.target.r * 1.8,
+      y: L.target.cy - L.target.r * 1.8,
+      w: L.target.r * 3.6,
+      h: L.target.r * 3.6,
+    },
+  };
+  return boxes[key];
+}
+
+function roundedBox(ctx, b, r) {
+  ctx.beginPath();
+  if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, r);
+  else ctx.rect(b.x, b.y, b.w, b.h);
+}
+
+/* Nothing was measured here, so nothing in the marking settles. */
+/* Both marks are compact: on a wide station they sit in the middle of it
+ * rather than railing along its whole length, so they read as part of the
+ * scene and not as an overlay on top of it. */
+function compact(box, maxW, maxH) {
+  const w = Math.min(box.w, maxW);
+  const h = Math.min(box.h, maxH);
+  return { x: box.x + (box.w - w) / 2, y: box.y + (box.h - h) / 2, w, h };
+}
+
+export function drawUnresolvedMark(ctx, P, outer, t) {
+  const box = compact(outer, 170, 150);
+  const drift = (t * 10) % 12;
+  const jitter = Math.sin(t * 3.1) * 1.3;
+  ctx.save();
+  ctx.setLineDash([5, 6]);
+  ctx.lineDashOffset = -drift;
+  ctx.strokeStyle = withAlpha(P.ink2, 0.22);
+  ctx.lineWidth = 1.6;
+  roundedBox(ctx, { x: box.x + jitter, y: box.y - jitter, w: box.w, h: box.h }, 8);
+  ctx.stroke();
+  ctx.lineDashOffset = -drift + 2.5;
+  ctx.strokeStyle = withAlpha(P["line-lit"], 0.3);
+  ctx.lineWidth = 1.1;
+  roundedBox(ctx, box, 8);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+/* The reading is real but it sits at the end of the scale, so the scale is
+ * drawn ending: a stop bar, and hatched ground past it on both sides. */
+export function drawLimitMark(ctx, P, outer) {
+  const box = compact(outer, 120, 140);
+  ctx.save();
+  const bar = 2;
+  const reach = Math.min(10, box.h * 0.3);
+  for (const side of [-1, 1]) {
+    const y = side < 0 ? box.y : box.y + box.h - bar;
+    ctx.fillStyle = withAlpha(P["metal-edge"], 0.55);
+    ctx.fillRect(box.x, y, box.w, bar);
+    const beyond = side < 0 ? y - reach : y + bar;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(box.x, beyond, box.w, reach);
+    ctx.clip();
+    ctx.strokeStyle = withAlpha(P["metal-edge"], 0.2);
+    ctx.lineWidth = 1;
+    for (let x = box.x - reach; x < box.x + box.w; x += 6) {
+      ctx.beginPath();
+      ctx.moveTo(x, beyond + reach);
+      ctx.lineTo(x + reach, beyond);
+      ctx.stroke();
+    }
+    ctx.restore();
+    for (const x of [box.x, box.x + box.w]) {
+      ctx.strokeStyle = withAlpha(P["metal-edge"], 0.5);
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(x, y + bar / 2);
+      ctx.lineTo(x, y + bar / 2 + side * -reach * 0.55);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/* Both flags, for every gate the scene draws. */
+export function drawGateFlags(ctx, P, L, gates, t) {
+  for (const key of ["dissolve", "gut", "pump", "liver", "binding", "target"]) {
+    const gate = gates[key];
+    const box = stationBox(L, key);
+    if (!gate || !box) continue;
+    if (gate.edge) drawLimitMark(ctx, P, box);
+    if (gate.untested) drawUnresolvedMark(ctx, P, box, t);
+  }
+}
+
 /* ------------------------------------------------------- liver mechanism */
 
 /* The efflux pump: a piston set in the gut wall on the blood side that shoves
@@ -1675,6 +1849,27 @@ function grippedMolecules(ctx, P, L, holding, t, glow) {
 
 
 
+/* The drums are sitting on their travel stop, which is what a reading at the
+ * limit of the assay looks like as a mechanism. */
+function drumStops(ctx, P, L, open) {
+  const g = L.gate;
+  const r = g.r * 0.78;
+  const retract = ease(clamp(open, 0, 1)) * r * 0.6;
+  for (const dir of [-1, 1]) {
+    const y = g.cy + dir * (r * 0.64 + retract + r * 0.92);
+    ctx.fillStyle = withAlpha(P["metal-edge"], 0.9);
+    ctx.fillRect(g.cx - g.r * 0.9, y - 2, g.r * 1.8, 4);
+    ctx.strokeStyle = withAlpha(P["metal-edge"], 0.45);
+    ctx.lineWidth = 1;
+    for (let x = g.cx - g.r * 0.9; x < g.cx + g.r * 0.9; x += 6) {
+      ctx.beginPath();
+      ctx.moveTo(x, y + dir * 8);
+      ctx.lineTo(x + 6, y);
+      ctx.stroke();
+    }
+  }
+}
+
 function jamMarks(ctx, P, L, t) {
   const g = L.gate;
   const shake = Math.sin(t * 40) * 1.2;
@@ -1714,6 +1909,15 @@ export function drawLiverGate(ctx, P, L, t, gate, held, glow) {
   ctx.rect(box.x + 3, box.y + 3, box.w - 6, box.h - 6);
   ctx.clip();
   shredderDrums(ctx, P, L, open, spin);
+  if (gate?.untested) {
+    // a second exposure, out of register: the gate has not resolved
+    ctx.save();
+    ctx.globalAlpha = 0.34;
+    ctx.translate(Math.sin(t * 2.7) * 3, Math.cos(t * 2.1) * 2.4);
+    shredderDrums(ctx, P, L, clamp(open + Math.sin(t * 1.7) * 0.22, 0, 1), -spin * 0.6);
+    ctx.restore();
+  }
+  if (gate?.edge) drumStops(ctx, P, L, open);
   grippedMolecules(ctx, P, L, held, t, glow);
   ctx.restore();
   ctx.restore();
@@ -2296,6 +2500,8 @@ function enzymeDoor(ctx, P, box, gate, t) {
   rotorTeeth(ctx, P, box.x + box.w - 2, box.y + box.h * 0.5, box.h * 0.26,
     t * (0.4 + open * 2.2), 8);
   ctx.restore();
+  if (gate?.edge) drawLimitMark(ctx, P, box);
+  if (gate?.untested) drawUnresolvedMark(ctx, P, box, t);
 }
 
 function basinPath(ctx, L) {
@@ -2858,6 +3064,7 @@ export function makeRenderer(canvas, theme) {
     drawLiverGate(ctx, P, L, clock, gates.liver, gates.liver?.holding || 0, glowSmall);
     drawMolecules(ctx, P, L, state.molecules || [], visuals, glowSmall);
     particles.draw(ctx, P);
+    drawGateFlags(ctx, P, L, gates, clock);
   }
 
   function syncWard(state) {
