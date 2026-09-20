@@ -64,6 +64,52 @@ TOKENS = """
 }
 """
 
+GAME_TOKENS = """
+/* The game scene is dark whatever the notebook around it is doing. A running
+ * game owns its own surface, and the molecule only reads as a light source
+ * against a dark body, so there is one scene palette rather than two. Every
+ * colour the canvas draws with is named here and nowhere else. */
+.w {
+  --g-surface: #101015;
+  --g-card: #1c1c21;
+  --g-ink: #f2f1ef;
+  --g-ink-2: #a8a7b0;
+  --g-void: #0d0e11;
+  --g-line: #08080a;
+  --g-line-lit: #d3dae2;
+  --g-skin: #2f3039;
+  --g-bone: #4a4a55;
+  --g-tissue-far: #16171c;
+  --g-tissue-mid: #1e1f26;
+  --g-tissue-near: #292a33;
+  --g-lumen: #2b2620;
+  --g-wall: #3b3b47;
+  --g-wall-edge: #565564;
+  --g-membrane: #454450;
+  --g-blood: #4d2c34;
+  --g-blood-deep: #26151b;
+  --g-blood-cell: #7c3c45;
+  --g-plasma: #a05a63;
+  --g-organ: #5d3730;
+  --g-organ-deep: #33201d;
+  --g-metal: #74737d;
+  --g-metal-edge: #cbc9d2;
+  --g-metal-dark: #33323b;
+  --g-drug: #ff9a5e;
+  --g-drug-core: #fff1e0;
+  --g-drug-dim: #7e6a5d;
+  --g-foreign: #4e9c92;
+  --g-foreign-deep: #235049;
+  --g-foreign-lit: #9ce6d9;
+  --g-hazard: #ff6a4d;
+  --g-grain: #fff0dc;
+  --g-vignette: #000000;
+  --g-grain-strength: 0.07;
+  --g-glow-strength: 0.72;
+}
+"""
+
+
 BASE = """
 .w {
   font-family: var(--ui);
@@ -198,3 +244,8 @@ const bindTheme = (root, model) => {
 def stylesheet(extra: str) -> str:
     """Tokens, base rules, then one widget's own rules."""
     return TOKENS + BASE + extra
+
+
+def game_stylesheet(extra: str) -> str:
+    """The same, plus the scene palette the game canvas reads from CSS."""
+    return TOKENS + GAME_TOKENS + BASE + extra

@@ -14,7 +14,9 @@ STEPS = [
     ("clinical_auc.csv", "build_clinical_auc.py"),
     ("measured.csv and measured_full_provenance.json", "build_measured.py"),
     ("sources.json", "build_sources_doc.py"),
+    ("game.json, game_provenance.json and the game structure cards", "build_game.py"),
     ("VERIFIED.md", "verify.py"),
+    ("GAME_VERIFIED.md", "verify_game.py"),
 ]
 
 

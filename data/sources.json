@@ -100,6 +100,28 @@
    "joined_into_measured_csv": false,
    "description": "ExpansionRx ADMET series. The Hugging Face card gates downloads behind a form, but the resolve URL serves anonymously; nothing in it is an approved drug, so no row joins."
   },
+  "erx_train_raw": {
+   "repo": "openadmet/openadmet-expansionrx-challenge-train-data",
+   "file": "expansion_data_train_raw.csv",
+   "url": "https://huggingface.co/datasets/openadmet/openadmet-expansionrx-challenge-train-data/resolve/main/expansion_data_train_raw.csv",
+   "license": "cc-by-4.0",
+   "structure_column": "SMILES",
+   "identifier_column": "Molecule Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/openadmet-expansionrx-challenge-train-data/resolve/main/expansion_data_train_raw.csv\")",
+   "joined_into_measured_csv": false,
+   "description": "The same ExpansionRx series before the challenge file dropped its censored records, with a separate modifier column per endpoint holding '=', '<' or '>'."
+  },
+  "asap_potency": {
+   "repo": "openadmet/ASAP_Polaris_OpenADMET_challenge",
+   "file": "Potency.csv",
+   "url": "https://huggingface.co/datasets/openadmet/ASAP_Polaris_OpenADMET_challenge/resolve/main/Potency.csv",
+   "license": "mit",
+   "structure_column": "CXSMILES",
+   "identifier_column": "Molecule Name",
+   "pandas": "pd.read_csv(\"https://huggingface.co/datasets/openadmet/ASAP_Polaris_OpenADMET_challenge/resolve/main/Potency.csv\")",
+   "joined_into_measured_csv": false,
+   "description": "Fitted pIC50 against the main protease of SARS-CoV-2 and of MERS-CoV, 1,328 compounds, 220 of which also appear in ADMET.csv."
+  },
   "asap_admet": {
    "repo": "openadmet/ASAP_Polaris_OpenADMET_challenge",
    "file": "ADMET.csv",

@@ -6,7 +6,7 @@ the research notes the notebook was planned from. The recomputed column is what
 the data says today. A row marked **DISAGREES** means the notebook must use the
 recomputed value.
 
-Recomputed on 2026-09-18 with pandas 3.0.6.
+Recomputed on 2026-09-19 with pandas 2.3.3.
 
 | Claim | Stated | Recomputed | Source | Note |
 | --- | --- | --- | --- | --- |

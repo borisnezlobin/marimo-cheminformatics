@@ -1,0 +1,75 @@
+<svg xmlns='http://www.w3.org/2000/svg' width='220' height='170' viewBox='0 0 220 170'><style>.a0{fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1}.a1{fill:none;fill-rule:evenodd;stroke:#0000FF;stroke-width:1.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1}.a2{fill:none;fill-rule:evenodd;stroke:#FF0000;stroke-width:1.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1}.a3{fill:none;stroke:#000000;stroke-width:1.0px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;}.a4{font-size:6px;font-style:normal;font-weight:normal;fill-opacity:1;stroke:none;font-family:sans-serif;text-anchor:start;fill:#0000FF}.a5{font-size:6px;font-style:normal;font-weight:normal;fill-opacity:1;stroke:none;font-family:sans-serif;text-anchor:start;fill:#FF0000}</style>
+<path d='M 8.8,67.8 L 15.4,69.7' class='a0' />
+<path d='M 15.4,69.7 L 22.0,71.6' class='a1' />
+<path d='M 27.0,70.0 L 31.6,65.5' class='a1' />
+<path d='M 31.6,65.5 L 36.3,61.1' class='a0' />
+<path d='M 36.3,61.1 L 51.9,65.7' class='a0' />
+<path d='M 36.9,63.8 L 49.9,67.6' class='a0' />
+<path d='M 51.9,65.7 L 55.8,81.5' class='a0' />
+<path d='M 55.8,81.5 L 70.2,89.3' class='a0' />
+<path d='M 70.2,89.3 L 84.9,82.2' class='a0' />
+<path d='M 84.9,82.2 L 98.4,91.4' class='a0' />
+<path d='M 87.4,81.0 L 98.6,88.6' class='a0' />
+<path d='M 98.4,91.4 L 113.1,84.3' class='a0' />
+<path d='M 113.1,84.3 L 114.3,68.0' class='a0' />
+<path d='M 110.7,82.7 L 111.8,69.3' class='a0' />
+<path d='M 114.3,68.0 L 120.4,65.1' class='a0' />
+<path d='M 120.4,65.1 L 126.5,62.2' class='a2' />
+<path d='M 131.5,62.7 L 137.0,66.4' class='a2' />
+<path d='M 137.0,66.4 L 142.5,70.2' class='a0' />
+<path d='M 142.5,70.2 L 157.2,63.1' class='a0' />
+<path d='M 157.2,63.1 L 162.7,66.8' class='a0' />
+<path d='M 162.7,66.8 L 168.2,70.6' class='a1' />
+<path d='M 171.4,76.1 L 172.6,82.2' class='a1' />
+<path d='M 172.6,82.2 L 173.7,88.3' class='a0' />
+<path d='M 173.7,88.3 L 189.8,85.3' class='a0' />
+<path d='M 189.8,85.3 L 192.8,101.4' class='a0' />
+<path d='M 192.8,101.4 L 199.6,100.1' class='a0' />
+<path d='M 199.6,100.1 L 206.3,98.8' class='a2' />
+<path d='M 208.4,95.8 L 207.1,89.1' class='a2' />
+<path d='M 207.1,89.1 L 205.8,82.3' class='a0' />
+<path d='M 189.8,85.3 L 186.7,69.3' class='a0' />
+<path d='M 114.3,68.0 L 100.8,58.8' class='a0' />
+<path d='M 100.8,58.8 L 86.1,65.9' class='a0' />
+<path d='M 100.6,61.7 L 88.5,67.5' class='a0' />
+<path d='M 70.2,89.3 L 67.2,105.3' class='a0' />
+<path d='M 67.4,90.6 L 65.2,103.1' class='a0' />
+<path d='M 67.2,105.3 L 60.4,106.2' class='a0' />
+<path d='M 60.4,106.2 L 53.6,107.2' class='a1' />
+<path d='M 49.9,105.0 L 46.9,98.9' class='a1' />
+<path d='M 46.9,98.9 L 44.0,92.8' class='a0' />
+<path d='M 44.0,92.8 L 28.3,88.2' class='a0' />
+<path d='M 28.0,86.8 L 23.1,91.5' class='a0' />
+<path d='M 23.1,91.5 L 18.2,96.2' class='a2' />
+<path d='M 29.7,88.6 L 24.8,93.3' class='a0' />
+<path d='M 24.8,93.3 L 19.9,98.0' class='a2' />
+<path d='M 28.3,88.2 L 26.9,82.2' class='a0' />
+<path d='M 26.9,82.2 L 25.4,76.1' class='a1' />
+<path d='M 44.0,92.8 L 55.8,81.5' class='a0' />
+<path d='M 43.3,90.0 L 53.1,80.7' class='a0' />
+<path d='M 86.1,65.9 L 84.9,82.2' class='a0' />
+<path d='M 186.7,69.3 L 180.0,70.5' class='a0' />
+<path d='M 180.0,70.5 L 173.2,71.8' class='a1' />
+<path d='M 205.8,82.3 L 189.8,85.3' class='a0' />
+<path d='M 36.0,61.3 L 36.3,61.1 L 37.1,61.3' class='a3' />
+<path d='M 51.2,65.4 L 51.9,65.7 L 52.1,66.4' class='a3' />
+<path d='M 97.7,90.9 L 98.4,91.4 L 99.1,91.0' class='a3' />
+<path d='M 112.3,84.7 L 113.1,84.3 L 113.1,83.5' class='a3' />
+<path d='M 142.2,70.0 L 142.5,70.2 L 143.2,69.8' class='a3' />
+<path d='M 156.5,63.4 L 157.2,63.1 L 157.5,63.3' class='a3' />
+<path d='M 173.7,88.0 L 173.7,88.3 L 174.5,88.2' class='a3' />
+<path d='M 192.6,100.6 L 192.8,101.4 L 193.1,101.3' class='a3' />
+<path d='M 205.9,82.6 L 205.8,82.3 L 205.0,82.4' class='a3' />
+<path d='M 186.9,70.1 L 186.7,69.3 L 186.4,69.3' class='a3' />
+<path d='M 101.5,59.3 L 100.8,58.8 L 100.1,59.2' class='a3' />
+<path d='M 86.9,65.6 L 86.1,65.9 L 86.1,66.7' class='a3' />
+<path d='M 67.4,104.5 L 67.2,105.3 L 66.9,105.4' class='a3' />
+<path d='M 29.1,88.4 L 28.3,88.2 L 28.3,87.9' class='a3' />
+<text x='22.5' y='75.6' class='a4' >N</text>
+<text x='127.1' y='64.2' class='a5' >O</text>
+<text x='168.7' y='75.6' class='a4' >N</text>
+<text x='206.9' y='101.6' class='a5' >O</text>
+<text x='44.6' y='110.8' class='a4' >H</text>
+<text x='49.1' y='110.8' class='a4' >N</text>
+<text x='14.6' y='102.7' class='a5' >O</text>
+</svg>

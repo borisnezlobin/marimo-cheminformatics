@@ -11,7 +11,7 @@ pip install "rdkit>=2024.3" "pandas>=2.2" "numpy>=1.26" lxml
 python build_all.py
 ```
 
-`build_all.py` runs the six steps below in order and finishes by rewriting
+`build_all.py` runs the eight steps below in order and finishes by rewriting
 `VERIFIED.md`. From a warm cache the whole thing takes about five minutes, most
 of it spent turning structures into InChIKeys.
 
@@ -32,7 +32,9 @@ OPENADMET_DATA=/path/to/data python build_all.py
 | `build_clinical_auc.py` | `data/clinical_auc.csv` | Holds the five human desipramine studies and checks each quote against a current FDA label through openFDA. |
 | `build_measured.py` | `data/measured.csv`, `data/measured_full_provenance.json` | Joins `drugs.csv` to the competition files by parent InChIKey and records the file and row index behind every value. |
 | `build_sources_doc.py` | `data/sources.json` | Writes the URL, licence and pandas call for each competition file. `--check` confirms each URL still serves. |
+| `build_game.py` | `data/game.json`, `data/game_provenance.json`, `data/structures/game/` | Assembles the three compound pools the game draws from, turns each measurement into a score between zero and one through a named transformation, and records the file and row behind every value. |
 | `verify.py` | `VERIFIED.md` | Recomputes every headline number the notebook states and marks any that no longer holds. |
+| `verify_game.py` | `GAME_VERIFIED.md` | Opens every game value against its source row, recomputes every score, and reports what each ward's gates actually do. |
 
 `roster.py`, `resolve.py`, `chem.py` and `sources.py` are the shared pieces the
 scripts import. Nothing in this directory is imported by the notebook itself.

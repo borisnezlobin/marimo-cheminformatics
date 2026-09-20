@@ -183,6 +183,33 @@ CONTEXT_SOURCES: dict[str, Source] = {
             ),
         ),
         Source(
+            key="erx_train_raw",
+            repo="openadmet/openadmet-expansionrx-challenge-train-data",
+            name="expansion_data_train_raw.csv",
+            subdir="erx",
+            smiles_column="SMILES",
+            id_column="Molecule Name",
+            license="cc-by-4.0",
+            description=(
+                "The same ExpansionRx series before the challenge file dropped its "
+                "censored records, with a separate modifier column per endpoint "
+                "holding '=', '<' or '>'."
+            ),
+        ),
+        Source(
+            key="asap_potency",
+            repo="openadmet/ASAP_Polaris_OpenADMET_challenge",
+            name="Potency.csv",
+            subdir="asap",
+            smiles_column="CXSMILES",
+            id_column="Molecule Name",
+            license="mit",
+            description=(
+                "Fitted pIC50 against the main protease of SARS-CoV-2 and of MERS-CoV, "
+                "1,328 compounds, 220 of which also appear in ADMET.csv."
+            ),
+        ),
+        Source(
             key="asap_admet",
             repo="openadmet/ASAP_Polaris_OpenADMET_challenge",
             name="ADMET.csv",

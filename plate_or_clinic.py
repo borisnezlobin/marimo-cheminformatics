@@ -29,7 +29,7 @@ def _():
     import numpy as np
     import pandas as pd
 
-    from widgets import Cabinet, Gate, Guess, StereoEditor
+    from widgets import Cabinet, Gauntlet, Guess, StereoEditor, load_game
 
     DATA = Path(__file__).parent / "data"
 
@@ -44,7 +44,7 @@ def _():
     return (
         Cabinet,
         DATA,
-        Gate,
+        Gauntlet,
         Guess,
         StereoEditor,
         alt,
@@ -99,12 +99,13 @@ def _(DATA, mo, pd):
 @app.cell(hide_code=True)
 def _(
     Cabinet,
-    Gate,
+    DATA,
+    Gauntlet,
     Guess,
     StereoEditor,
     catalog_records,
-    gate_readout,
     guess_rounds,
+    load_game,
     mo,
     pair_records,
     stereo_readout,
@@ -113,7 +114,7 @@ def _(
     # Marimo issue #10494 loses a widget's model on a cold boot when their
     # creation is spaced out by roughly half a second or more, which is exactly
     # what interleaving these with pandas work used to do.
-    gate_widget = Gate(blockade=0.0, readout=gate_readout(0.0))
+    gauntlet_widget = Gauntlet(game=load_game(DATA / "game.json"))
     cabinet_widget = Cabinet(
         catalog=catalog_records,
         pair_index=pair_records,
@@ -122,15 +123,15 @@ def _(
     guess_widget = Guess(rounds=guess_rounds)
     stereo_widget = StereoEditor(readout=stereo_readout("quinine"))
 
-    gate = mo.ui.anywidget(gate_widget)
+    gauntlet = mo.ui.anywidget(gauntlet_widget)
     cabinet = mo.ui.anywidget(cabinet_widget)
     guess = mo.ui.anywidget(guess_widget)
     stereo = mo.ui.anywidget(stereo_widget)
     return (
         cabinet,
         cabinet_widget,
-        gate,
-        gate_widget,
+        gauntlet,
+        gauntlet_widget,
         guess,
         guess_widget,
         stereo,
@@ -162,54 +163,20 @@ def _(mo):
 
 @app.cell(hide_code=True)
 def _(mo):
-    mo.md(r"""## Block the exit and watch the level rise""")
+    mo.md(r"""## Send a compound through a body""")
     return
 
 
+
+
+
+
+
+
 @app.cell(hide_code=True)
-def _(gate):
-    gate
+def _(gauntlet):
+    gauntlet
     return
-
-
-@app.cell(hide_code=True)
-def _(gate, gate_readout, gate_widget):
-    # Pushing the readout onto the existing widget keeps the animation running,
-    # where rebuilding the widget would restart it on every drag.
-    gate_widget.readout = gate_readout(gate.blockade)
-    return
-
-
-@app.cell(hide_code=True)
-def _():
-    def gate_readout(blockade: float) -> dict:
-        """What a partly blocked exit does to the amount of drug in the blood.
-
-        Clearance falls in proportion to the share of the enzyme still working, so
-        the amount at steady state rises by the reciprocal of that share.
-        """
-        working_share = max(1.0 - blockade, 0.05)
-        steady_state_multiple = 1.0 / working_share
-        if blockade < 0.05:
-            caption = (
-                "Nothing is blocking the exit. Each dose clears before the next one "
-                "arrives, so the amount in the blood holds steady."
-            )
-        else:
-            caption = (
-                f"With {blockade:.0%} of the enzyme occupied, the drug leaves "
-                f"{steady_state_multiple:.1f} times more slowly, and the amount in "
-                f"the blood settles at {steady_state_multiple:.1f} times what the "
-                "prescription intended."
-            )
-        return {
-            "blockade": round(blockade, 4),
-            "steady_state_multiple": round(steady_state_multiple, 2),
-            "half_life_hours": round(6.0 / working_share, 1),
-            "caption": caption,
-        }
-
-    return (gate_readout,)
 
 
 @app.cell(hide_code=True)
