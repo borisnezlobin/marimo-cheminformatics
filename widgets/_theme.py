@@ -78,7 +78,7 @@ GAME_TOKENS = """
   --g-line: #08080a;
   --g-line-lit: #d3dae2;
   --g-skin: #2f3039;
-  --g-bone: #4a4a55;
+  --g-bone: #837f8c;
   --g-tissue-far: #16171c;
   --g-tissue-mid: #1e1f26;
   --g-tissue-near: #292a33;

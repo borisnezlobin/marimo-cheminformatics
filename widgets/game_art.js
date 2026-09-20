@@ -70,6 +70,7 @@ const TAU = Math.PI * 2;
 
 const PARALLAX = 22;
 
+
 const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
 const lerp = (a, b, t) => a + (b - a) * t;
 const ease = (t) => t * t * (3 - 2 * t);
@@ -399,6 +400,7 @@ export function layout(w, h) {
     h,
     dense: w >= 620,
     skin,
+    wall: skin + clamp(h * 0.105, 20, 60),
     channel: { cy, half, x0: w * lm.gutWall, x1: w },
     stomach: {
       x: w * lm.mouth * (w < 520 ? 0.4 : 1),
@@ -423,9 +425,9 @@ export function layout(w, h) {
       x1: w * 0.66,
       yTop: skin + h * 0.02,
       yBot: cy - half + 2,
-      dipY: cy + half * 0.78,
+      dipY: cy + half * 0.34,
     },
-    ribs: { y0: skin * 0.9, y1: skin + h * 0.1 },
+    ribs: { y0: skin * 0.4, y1: skin + clamp(h * 0.105, 20, 60) },
     returnVein: { cy: h * 0.885, half: clamp(h * 0.062, 10, 38) },
     gate: { cx: w * lm.liverGate, cy, r: gateR },
     field: { x0: w * 0.52, x1: w * lm.targetEntry, cy, half },
@@ -561,13 +563,14 @@ function hatchBand(ctx, P, x0, x1, y0, y1, spacing, alpha) {
 /* The body's own outline, so the cross-section reads as a body rather than a
  * landscape: a skin layer across the top, cut open, and the same at the floor. */
 export function drawBodyCut(ctx, P, L) {
-  const s = L.skin;
+  const s = L.wall ?? L.skin;
   const top = ctx.createLinearGradient(0, -PARALLAX, 0, s);
   top.addColorStop(0, P.skin);
-  top.addColorStop(1, withAlpha(P["tissue-near"], 0.9));
+  top.addColorStop(0.35, withAlpha(P.skin, 0.95));
+  top.addColorStop(1, withAlpha(P["tissue-near"], 0.92));
   ctx.fillStyle = top;
   ctx.fillRect(-PARALLAX, -PARALLAX, L.w + PARALLAX * 2, s + PARALLAX);
-  hatchBand(ctx, P, -PARALLAX, L.w + PARALLAX, 0, s, 7, 0.22);
+  hatchBand(ctx, P, -PARALLAX, L.w + PARALLAX, 0, s, 7, 0.16);
   ctx.beginPath();
   ctx.moveTo(-PARALLAX, s);
   const step = Math.max(24, L.w / 20);
@@ -665,36 +668,65 @@ export function drawAdipose(ctx, P, L) {
 
 /* Ribs in section along the top, so the band above the organs is the body's
  * wall rather than a margin. */
+/* Ribs cut across, set into the muscle of the wall: a dense cortical shell, a
+ * coarse marrow interior, and muscle closing over the lower half of each one
+ * so they sit in the body rather than on it. */
+function ribSection(ctx, P, x, y, r, tilt) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(tilt);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, r * 0.74, r, 0, 0, TAU);
+  const shell = ctx.createLinearGradient(-r * 0.7, -r, r * 0.5, r);
+  shell.addColorStop(0, withAlpha(P["line-lit"], 0.62));
+  shell.addColorStop(0.38, P.bone);
+  shell.addColorStop(1, withAlpha(P.bone, 0.5));
+  ctx.fillStyle = shell;
+  ctx.fill();
+  ink(ctx, P, 1.4, 0.75);
+  ctx.beginPath();
+  ctx.ellipse(r * 0.04, r * 0.06, r * 0.4, r * 0.62, 0, 0, TAU);
+  ctx.fillStyle = withAlpha(P["organ-deep"], 0.55);
+  ctx.fill();
+  ink(ctx, P, 0.9, 0.3);
+  const rnd = makeRandom(Math.round(x) * 7 + 13);
+  for (let i = 0; i < 9; i += 1) {
+    const a = rnd() * TAU;
+    const d = Math.sqrt(rnd()) * r * 0.5;
+    ctx.beginPath();
+    ctx.arc(Math.cos(a) * d, Math.sin(a) * d + r * 0.08, 0.6 + rnd() * 1.4, 0, TAU);
+    ctx.fillStyle = withAlpha(P.bone, 0.35 + rnd() * 0.3);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 export function drawRibs(ctx, P, L) {
   const b = L.ribs;
-  const h = (b.y1 - b.y0) * 1.5;
-  if (h < 12) return;
-  const pitch = Math.max(110, L.w / 6);
-  for (let x = pitch * 0.15; x < L.w + pitch; x += pitch) {
-    const cy = b.y0 + h * 0.18;
-    ctx.save();
-    ctx.translate(x, cy);
-    ctx.rotate(0.28);
-    ctx.beginPath();
-    ctx.ellipse(0, 0, h * 0.28, h * 0.6, 0, 0, TAU);
-    const grad = ctx.createLinearGradient(-h * 0.28, 0, h * 0.28, 0);
-    grad.addColorStop(0, withAlpha(P.bone, 0.95));
-    grad.addColorStop(0.4, withAlpha(P["line-lit"], 0.45));
-    grad.addColorStop(1, withAlpha(P.bone, 0.7));
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ink(ctx, P, 1.4, 0.7);
-    ctx.beginPath();
-    ctx.ellipse(0, h * 0.06, h * 0.13, h * 0.34, 0, 0, TAU);
-    ctx.fillStyle = withAlpha(P["organ-deep"], 0.85);
-    ctx.fill();
-    ink(ctx, P, 1, 0.4);
-    ctx.restore();
+  const band = b.y1 - b.y0;
+  if (band < 12) return;
+  const r = band * 0.52;
+  const cy = b.y0 + band * 0.46;
+  const pitch = Math.max(120, L.w / 5.5);
+  for (let i = 0, x = pitch * 0.2; x < L.w + pitch; x += pitch, i += 1) {
+    ribSection(ctx, P, x, cy + Math.sin(i * 1.7) * band * 0.08,
+      r * (0.9 + Math.sin(i * 2.3) * 0.1), 0.3 + Math.sin(i) * 0.12);
   }
+  const muscle = ctx.createLinearGradient(0, cy + band * 0.3, 0, b.y1 + band * 0.25);
+  muscle.addColorStop(0, withAlpha(P.skin, 0));
+  muscle.addColorStop(0.45, withAlpha(P.skin, 0.9));
+  muscle.addColorStop(1, withAlpha(P["tissue-near"], 0.95));
+  ctx.fillStyle = muscle;
+  ctx.fillRect(-PARALLAX, cy + band * 0.3, L.w + PARALLAX * 2,
+    b.y1 + band * 0.25 - cy - band * 0.3);
+  hatchBand(ctx, P, -PARALLAX, L.w + PARALLAX, cy, b.y1 + band * 0.2, 6, 0.14);
   ctx.beginPath();
-  ctx.moveTo(-PARALLAX, b.y1);
-  ctx.lineTo(L.w + PARALLAX, b.y1);
-  ink(ctx, P, 1, 0.3);
+  ctx.moveTo(-PARALLAX, b.y1 + band * 0.2);
+  const step = Math.max(26, L.w / 22);
+  for (let x = -PARALLAX; x <= L.w + PARALLAX; x += step) {
+    ctx.quadraticCurveTo(x + step * 0.5, b.y1 + band * 0.2 + 3, x + step, b.y1 + band * 0.2);
+  }
+  ink(ctx, P, 1.2, 0.4);
 }
 
 /* The vein carrying everything back, deeper in the body and out of focus, so
@@ -742,29 +774,145 @@ export function drawReturnVein(ctx, P, L) {
   ctx.fillRect(-PARALLAX, top - v.half, L.w + PARALLAX * 2, v.half * 4);
 }
 
-function organLobe(ctx, L) {
-  const o = L.liver;
-  const gate = L.gate;
-  const w = o.x1 - o.x0;
-  const hw = gate.r * 1.2;
-  const inner = hw + gate.r * 0.42;
-  const outer = hw + gate.r * 1.15;
+/* The liver in section. The outline is asymmetric on purpose: a thin pointed
+ * left lobe, a notch between the lobes, a deep blunt right lobe, a nearly
+ * straight inferior border, and where a mechanism is set into it, a recess in
+ * that border. `spec` carries the box plus an optional recess. */
+export function liverProfile(ctx, spec) {
+  const { x0, x1, yTop, yBot } = spec;
+  const w = x1 - x0;
+  const h = yBot - yTop;
+  const notchX = x0 + w * 0.44;
   ctx.beginPath();
-  ctx.moveTo(o.x0, o.yBot - 6);
-  ctx.bezierCurveTo(o.x0 - w * 0.05, o.yTop + (o.yBot - o.yTop) * 0.45,
-    o.x0 + w * 0.12, o.yTop, o.x0 + w * 0.4, o.yTop + 4);
-  ctx.bezierCurveTo(o.x0 + w * 0.74, o.yTop - 8, o.x1 + w * 0.06,
-    o.yTop + (o.yBot - o.yTop) * 0.42, o.x1, o.yBot - 10);
-  ctx.quadraticCurveTo(o.x1 - w * 0.03, o.yBot + 10, o.x1 - w * 0.1, o.yBot + 2);
-  ctx.lineTo(gate.cx + outer, o.yBot + 2);
-  ctx.bezierCurveTo(gate.cx + outer * 0.9, o.yBot + 2,
-    gate.cx + inner * 1.05, o.dipY, gate.cx + inner, o.dipY);
-  ctx.lineTo(gate.cx - inner, o.dipY);
-  ctx.bezierCurveTo(gate.cx - inner * 1.05, o.dipY,
-    gate.cx - outer * 0.9, o.yBot + 2, gate.cx - outer, o.yBot + 2);
-  ctx.lineTo(o.x0 + w * 0.09, o.yBot + 2);
-  ctx.quadraticCurveTo(o.x0 + w * 0.01, o.yBot + 4, o.x0, o.yBot - 6);
+  ctx.moveTo(x0, yBot - h * 0.46);
+  // left lobe: thin, rising to a low dome
+  ctx.bezierCurveTo(x0 + w * 0.01, yTop + h * 0.58, x0 + w * 0.08, yTop + h * 0.26,
+    x0 + w * 0.2, yTop + h * 0.2);
+  ctx.bezierCurveTo(x0 + w * 0.3, yTop + h * 0.16, x0 + w * 0.37, yTop + h * 0.2,
+    notchX - w * 0.012, yTop + h * 0.22);
+  // the fissure between the lobes
+  ctx.quadraticCurveTo(notchX, yTop + h * 0.34, notchX + w * 0.014, yTop + h * 0.19);
+  // right lobe: taller, deeper, blunt at its far end
+  ctx.bezierCurveTo(x0 + w * 0.56, yTop + h * 0.02, x0 + w * 0.82, yTop + h * 0.01,
+    x0 + w * 0.93, yTop + h * 0.26);
+  ctx.bezierCurveTo(x1 + w * 0.03, yTop + h * 0.52, x1 - w * 0.01, yBot - h * 0.2,
+    x1 - w * 0.04, yBot - h * 0.02);
+  inferiorBorder(ctx, spec);
   ctx.closePath();
+}
+
+/* The inferior border. A liver in section is a wedge, thick at the right lobe
+ * and tapering to the left tip, so the border climbs as it runs left. A
+ * mechanism set into the organ interrupts it with a socket. */
+function borderY(spec, u) {
+  const h = spec.yBot - spec.yTop;
+  return spec.yBot - Math.pow(1 - u, 1.7) * h * 0.46;
+}
+
+function inferiorBorder(ctx, spec) {
+  const { x0, x1 } = spec;
+  const w = x1 - x0;
+  const r = spec.recess;
+  const steps = 14;
+  for (let i = steps; i >= 0; i -= 1) {
+    const u = i / steps;
+    const x = x0 + w * u;
+    if (r && Math.abs(x - r.cx) < r.outer) continue;
+    ctx.lineTo(x, borderY(spec, u) + Math.sin(u * 7) * 2);
+    if (r && x > r.cx && x - w / steps <= r.cx + r.outer) socket(ctx, spec, r);
+  }
+  ctx.lineTo(x0, spec.yBot - (spec.yBot - spec.yTop) * 0.12);
+}
+
+function socket(ctx, spec, r) {
+  const w = spec.x1 - spec.x0;
+  const uAt = (x) => clamp((x - spec.x0) / w, 0, 1);
+  const rim = (x) => borderY(spec, uAt(x));
+  ctx.lineTo(r.cx + r.outer, rim(r.cx + r.outer));
+  ctx.bezierCurveTo(r.cx + r.outer * 0.72, rim(r.cx + r.outer) + 4,
+    r.cx + r.inner * 1.04, r.dipY, r.cx + r.inner * 0.86, r.dipY);
+  ctx.quadraticCurveTo(r.cx, r.dipY + 6, r.cx - r.inner * 0.86, r.dipY);
+  ctx.bezierCurveTo(r.cx - r.inner * 1.04, r.dipY,
+    r.cx - r.outer * 0.72, rim(r.cx - r.outer) + 4, r.cx - r.outer, rim(r.cx - r.outer));
+}
+
+function liverSpec(L) {
+  const hw = L.gate.r * 1.2;
+  return {
+    x0: L.liver.x0,
+    x1: L.liver.x1,
+    yTop: L.liver.yTop,
+    yBot: L.liver.yBot,
+    recess: {
+      cx: L.gate.cx,
+      inner: hw + L.gate.r * 0.16,
+      outer: hw + L.gate.r * 0.62,
+      dipY: L.liver.dipY,
+    },
+  };
+}
+
+function organLobe(ctx, L) {
+  liverProfile(ctx, liverSpec(L));
+}
+
+/* A cut organ shows two surfaces: the matte face the blade went through, and
+ * the capsule around its rim, which is smooth and catches the light. */
+export function paintLiver(ctx, P, spec, pathFn, detail) {
+  const w = spec.x1 - spec.x0;
+  const h = spec.yBot - spec.yTop;
+  pathFn(ctx);
+  const face = ctx.createLinearGradient(0, spec.yTop, 0, spec.yBot);
+  face.addColorStop(0, P.organ);
+  face.addColorStop(0.55, withAlpha(P.organ, 0.95));
+  face.addColorStop(1, P["organ-deep"]);
+  ctx.fillStyle = face;
+  ctx.fill();
+
+  ctx.save();
+  pathFn(ctx);
+  ctx.clip();
+  lobuleSpeckle(ctx, P, spec, detail);
+  for (let i = 0; i < (detail ? 7 : 4); i += 1) {
+    portalBranch(ctx, P, spec.x0 + w * (0.12 + i * 0.13), spec.yBot,
+      -Math.PI / 2 + (i - 3) * 0.2, h * 0.56, Math.max(1.4, w * 0.007), 3);
+  }
+  // the capsule: a bright rim inside the outline, brightest along the top left
+  ctx.lineWidth = Math.max(4, h * 0.08);
+  ctx.strokeStyle = withAlpha(P["line-lit"], 0.07);
+  pathFn(ctx);
+  ctx.stroke();
+  ctx.lineWidth = Math.max(2, h * 0.035);
+  ctx.strokeStyle = withAlpha(P["line-lit"], 0.16);
+  pathFn(ctx);
+  ctx.stroke();
+  const shade = ctx.createLinearGradient(0, spec.yTop, 0, spec.yBot);
+  shade.addColorStop(0, withAlpha(P["line-lit"], 0.06));
+  shade.addColorStop(0.5, withAlpha(P.vignette, 0));
+  shade.addColorStop(1, withAlpha(P.vignette, 0.4));
+  ctx.fillStyle = shade;
+  ctx.fillRect(spec.x0 - 4, spec.yTop - 4, w + 8, h + 8);
+  ctx.restore();
+
+  pathFn(ctx);
+  ink(ctx, P, 1.8, 0.66);
+}
+
+/* The grain of the cut face: lobules, faint and irregular. */
+function lobuleSpeckle(ctx, P, spec, detail) {
+  const rnd = makeRandom(60611);
+  const w = spec.x1 - spec.x0;
+  const h = spec.yBot - spec.yTop;
+  const count = detail ? Math.round((w * h) / 900) : Math.round((w * h) / 2200);
+  for (let i = 0; i < count; i += 1) {
+    const x = spec.x0 + rnd() * w;
+    const y = spec.yTop + rnd() * h;
+    const r = 2 + rnd() * 5;
+    ctx.beginPath();
+    ctx.ellipse(x, y, r, r * (0.6 + rnd() * 0.5), rnd() * TAU, 0, TAU);
+    ctx.fillStyle = withAlpha(rnd() > 0.5 ? P["organ-deep"] : P["line-lit"], 0.05 + rnd() * 0.05);
+    ctx.fill();
+  }
 }
 
 /* The portal tree: blood arrives from the gut and fans out through the organ. */
@@ -785,33 +933,9 @@ function portalBranch(ctx, P, x, y, angle, len, width, depth) {
 }
 
 export function drawLiverMass(ctx, P, L) {
-  const o = L.liver;
-  organLobe(ctx, L);
-  const g = ctx.createLinearGradient(0, o.yTop, 0, o.yBot);
-  g.addColorStop(0, P["organ-deep"]);
-  g.addColorStop(0.55, P.organ);
-  g.addColorStop(1, P["organ-deep"]);
-  ctx.fillStyle = g;
-  ctx.fill();
-
-  ctx.save();
-  ctx.clip();
-  const w = o.x1 - o.x0;
-  const h = o.yBot - o.yTop;
-  for (let i = 0; i < (L.dense ? 5 : 3); i += 1) {
-    portalBranch(ctx, P, o.x0 + w * (0.18 + i * 0.17), o.yBot,
-      -Math.PI / 2 + (i - 2) * 0.26, h * 0.42, Math.max(1.4, w * 0.012), 3);
-  }
-  const sheen = ctx.createLinearGradient(o.x0, o.yTop, o.x0 + w * 0.5, o.yBot);
-  sheen.addColorStop(0, withAlpha(P["metal-edge"], 0.10));
-  sheen.addColorStop(0.6, withAlpha(P["metal-edge"], 0));
-  ctx.fillStyle = sheen;
-  ctx.fillRect(o.x0, o.yTop, w, o.yBot - o.yTop);
-  ctx.restore();
-
-  organLobe(ctx, L);
-  ink(ctx, P, 1.8, 0.62);
-  for (const [x, dir] of [[o.x0, -1], [o.x1, 1]]) {
+  const spec = liverSpec(L);
+  paintLiver(ctx, P, spec, (c) => liverProfile(c, spec), L.dense);
+  for (const [x, dir] of [[L.liver.x0, -1], [L.liver.x1, 1]]) {
     const mouth = ctx.createLinearGradient(x, 0, x + dir * L.channel.half * 0.9, 0);
     mouth.addColorStop(0, withAlpha(P["organ-deep"], 0.85));
     mouth.addColorStop(1, withAlpha(P["organ-deep"], 0));
@@ -819,19 +943,13 @@ export function drawLiverMass(ctx, P, L) {
     ctx.fillRect(Math.min(x, x + dir * L.channel.half * 0.9), L.channel.cy - L.channel.half,
       L.channel.half * 0.9, L.channel.half * 2);
   }
-  ctx.save();
-  organLobe(ctx, L);
-  ctx.clip();
-  ctx.strokeStyle = withAlpha(P["line-lit"], 0.16);
-  ctx.lineWidth = 3;
-  organLobe(ctx, L);
-  ctx.stroke();
-  ctx.restore();
-  const shadow = ctx.createLinearGradient(0, o.yBot - 4, 0, o.yBot + L.channel.half * 0.9);
+  const shadow = ctx.createLinearGradient(0, L.liver.yBot - 4, 0,
+    L.liver.yBot + L.channel.half * 0.9);
   shadow.addColorStop(0, withAlpha(P.vignette, 0.4));
   shadow.addColorStop(1, withAlpha(P.vignette, 0));
   ctx.fillStyle = shadow;
-  ctx.fillRect(o.x0 - 10, o.yBot - 4, o.x1 - o.x0 + 20, L.channel.half * 0.9);
+  ctx.fillRect(L.liver.x0 - 10, L.liver.yBot - 4, L.liver.x1 - L.liver.x0 + 20,
+    L.channel.half * 0.9);
   mountingBracket(ctx, P, L);
 }
 
@@ -1439,6 +1557,31 @@ function rotorTeeth(ctx, P, cx, cy, r, angle, teeth) {
   ctx.restore();
 }
 
+/* Chamfered shoulders and side lugs, so the machine is a cast part rather than
+ * a rectangle laid on the organ. */
+function housingPath(ctx, x, y, w, h, r) {
+  const c = Math.min(w, h) * 0.22;
+  const lug = r * 0.16;
+  ctx.beginPath();
+  ctx.moveTo(x + c, y);
+  ctx.lineTo(x + w - c, y);
+  ctx.lineTo(x + w, y + c);
+  ctx.lineTo(x + w, y + h * 0.38);
+  ctx.lineTo(x + w + lug, y + h * 0.44);
+  ctx.lineTo(x + w + lug, y + h * 0.56);
+  ctx.lineTo(x + w, y + h * 0.62);
+  ctx.lineTo(x + w, y + h - c);
+  ctx.lineTo(x + w - c, y + h);
+  ctx.lineTo(x + c, y + h);
+  ctx.lineTo(x, y + h - c);
+  ctx.lineTo(x, y + h * 0.62);
+  ctx.lineTo(x - lug, y + h * 0.56);
+  ctx.lineTo(x - lug, y + h * 0.44);
+  ctx.lineTo(x, y + h * 0.38);
+  ctx.lineTo(x, y + c);
+  ctx.closePath();
+}
+
 function gateHousing(ctx, P, L) {
   const g = L.gate;
   const w = g.r * 2.4;
@@ -1446,9 +1589,7 @@ function gateHousing(ctx, P, L) {
   const x = g.cx - w / 2;
   const y = g.cy - h / 2;
   ctx.save();
-  ctx.beginPath();
-  ctx.roundRect?.(x, y, w, h, Math.min(12, g.r * 0.25));
-  if (!ctx.roundRect) ctx.rect(x, y, w, h);
+  housingPath(ctx, x, y, w, h, g.r);
   const grad = ctx.createLinearGradient(0, y, 0, y + h);
   grad.addColorStop(0, P["metal-dark"]);
   grad.addColorStop(0.18, P.metal);
@@ -1576,7 +1717,33 @@ export function drawLiverGate(ctx, P, L, t, gate, held, glow) {
   grippedMolecules(ctx, P, L, held, t, glow);
   ctx.restore();
   ctx.restore();
+  organOvergrowth(ctx, P, L);
   if (jammed) jamMarks(ctx, P, L, t);
+}
+
+/* The organ closes over the top and shoulders of the housing, so the metal is
+ * held by tissue rather than parked against it. */
+function organOvergrowth(ctx, P, L) {
+  const g = L.gate;
+  const w = g.r * 2.4;
+  const top = g.cy - (L.channel.half * 2 + 18) / 2;
+  ctx.save();
+  for (const side of [-1, 1]) {
+    ctx.beginPath();
+    ctx.moveTo(g.cx + side * w * 0.66, top - 10);
+    ctx.quadraticCurveTo(g.cx + side * w * 0.6, top + g.r * 0.5,
+      g.cx + side * w * 0.38, top + g.r * 0.62);
+    ctx.quadraticCurveTo(g.cx + side * w * 0.3, top + g.r * 0.2,
+      g.cx + side * w * 0.3, top - 10);
+    ctx.closePath();
+    const grad = ctx.createLinearGradient(0, top - 10, 0, top + g.r * 0.7);
+    grad.addColorStop(0, P.organ);
+    grad.addColorStop(1, P["organ-deep"]);
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ink(ctx, P, 1.3, 0.55);
+  }
+  ctx.restore();
 }
 
 /* ------------------------------------------------------------ proteins */
@@ -2000,12 +2167,12 @@ const LOW_LEVEL = 0.22;
 export function layoutPatient(w, h) {
   const skin = clamp(h * 0.055, 10, 30);
   const liverTop = skin + h * 0.03;
-  const liverBot = liverTop + clamp(h * 0.26, 56, 150);
+  const liverBot = liverTop + clamp(h * 0.34, 74, 200);
   const basin = {
     x0: w * 0.05,
     x1: w * 0.95,
-    y0: liverBot + clamp(h * 0.20, 34, 96),
-    y1: h - clamp(h * 0.14, 26, 66),
+    y0: liverBot + clamp(h * 0.14, 26, 76),
+    y1: h - clamp(h * 0.13, 24, 62),
   };
   const bays = [];
   const total = BAY_WEIGHTS.reduce((a, b) => a + b, 0);
@@ -2020,10 +2187,11 @@ export function layoutPatient(w, h) {
     h,
     dense: w >= 620,
     skin,
-    liver: { x0: w * 0.07, x1: w * 0.93, yTop: liverTop, yBot: liverBot },
+    wall: skin + clamp(h * 0.09, 16, 52),
+    liver: { x0: w * 0.12, x1: w * 0.88, yTop: liverTop, yBot: liverBot },
     channel: { cy: (liverTop + liverBot) / 2, half: (liverBot - liverTop) / 2, x0: 0, x1: w },
     gut: { x: 0, w: 0 },
-    ribs: { y0: skin * 0.9, y1: skin + h * 0.08 },
+    ribs: { y0: skin * 0.4, y1: skin + clamp(h * 0.09, 16, 52) },
     basin,
     bays,
     dial: { cx: w * 0.8, cy: liverTop + (liverBot - liverTop) * 0.42,
@@ -2032,53 +2200,23 @@ export function layoutPatient(w, h) {
   };
 }
 
+function patientLiverSpec(L) {
+  return { x0: L.liver.x0, x1: L.liver.x1, yTop: L.liver.yTop, yBot: L.liver.yBot };
+}
+
 function patientLiverLobe(ctx, L) {
-  const o = L.liver;
-  const w = o.x1 - o.x0;
-  const h = o.yBot - o.yTop;
-  ctx.beginPath();
-  ctx.moveTo(o.x0, o.yBot - h * 0.3);
-  ctx.bezierCurveTo(o.x0 - w * 0.02, o.yTop + h * 0.2, o.x0 + w * 0.12, o.yTop - h * 0.05,
-    o.x0 + w * 0.33, o.yTop + h * 0.1);
-  ctx.bezierCurveTo(o.x0 + w * 0.4, o.yTop + h * 0.34, o.x0 + w * 0.46, o.yTop + h * 0.32,
-    o.x0 + w * 0.53, o.yTop + h * 0.04);
-  ctx.bezierCurveTo(o.x0 + w * 0.76, o.yTop - h * 0.1, o.x1 + w * 0.03,
-    o.yTop + h * 0.3, o.x1, o.yBot - h * 0.34);
-  ctx.bezierCurveTo(o.x1 - w * 0.04, o.yBot + h * 0.06, o.x0 + w * 0.2,
-    o.yBot + h * 0.08, o.x0, o.yBot - h * 0.3);
-  ctx.closePath();
+  liverProfile(ctx, patientLiverSpec(L));
 }
 
 function patientLiverBody(ctx, P, L) {
-  const o = L.liver;
-  const lw = o.x1 - o.x0;
-  const lh = o.yBot - o.yTop;
-  patientLiverLobe(ctx, L);
-  const g = ctx.createLinearGradient(0, o.yTop, 0, o.yBot);
-  g.addColorStop(0, P.organ);
-  g.addColorStop(1, P["organ-deep"]);
-  ctx.fillStyle = g;
-  ctx.fill();
-  ctx.save();
-  patientLiverLobe(ctx, L);
-  ctx.clip();
-  for (let i = 0; i < 7; i += 1) {
-    portalBranch(ctx, P, o.x0 + lw * (0.12 + i * 0.13), o.yBot,
-      -Math.PI / 2 + (i - 3) * 0.18, lh * 0.55, Math.max(1.4, lw * 0.006), 3);
-  }
-  const sheen = ctx.createLinearGradient(0, o.yTop, 0, o.yBot);
-  sheen.addColorStop(0, withAlpha(P["line-lit"], 0.12));
-  sheen.addColorStop(0.45, withAlpha(P["line-lit"], 0));
-  ctx.fillStyle = sheen;
-  ctx.fillRect(o.x0, o.yTop, lw, lh);
-  ctx.restore();
-  patientLiverLobe(ctx, L);
-  ink(ctx, P, 1.8, 0.62);
-  const cast = ctx.createLinearGradient(0, o.yBot - 6, 0, o.yBot + lh * 0.5);
+  const spec = patientLiverSpec(L);
+  const lh = spec.yBot - spec.yTop;
+  paintLiver(ctx, P, spec, (c) => liverProfile(c, spec), L.dense);
+  const cast = ctx.createLinearGradient(0, spec.yBot - 6, 0, spec.yBot + lh * 0.5);
   cast.addColorStop(0, withAlpha(P.vignette, 0.45));
   cast.addColorStop(1, withAlpha(P.vignette, 0));
   ctx.fillStyle = cast;
-  ctx.fillRect(o.x0 - 20, o.yBot - 6, lw + 40, lh * 0.5);
+  ctx.fillRect(spec.x0 - 20, spec.yBot - 6, spec.x1 - spec.x0 + 40, lh * 0.5);
 }
 
 /* Five notches, because a measurement arrives as one of five bands. */
@@ -2498,6 +2636,7 @@ export function bakePatientEnvironment(P, L, dpr, grainTile) {
   drawStrata(ctx, P, L);
   fibreTexture(ctx, P, L);
   drawBodyCut(ctx, P, L);
+  drawRibs(ctx, P, L);
   drawAdipose(ctx, P, L);
   foregroundTissue(ctx, P, L);
   vignette(ctx, P, L);
