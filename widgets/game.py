@@ -165,7 +165,13 @@ const OUTRO_SECONDS = 1.8;
 const RUNS_PER_WARD = 3;
 const HEAVY_LOSS = 0.5;
 const CLEAN_PASS = 0.85;
-const SAFE_BAND = 0.22;
+// The two lines the scene actually draws across a vial: the prescribed level a
+// medicine should sit under, and the level below which it has washed out.
+const PRESCRIBED_LEVEL = 0.55;
+const DRY_LEVEL = 0.22;
+const RESTING_LEVEL = 0.5;
+const MOVE_SECONDS = 1.6;
+const CROSSING_BEAT = 0.45;
 const LANDMARKS = (__art.SCENE && __art.SCENE.landmarks) || {};
 const CHANNEL = (__art.SCENE && __art.SCENE.channel) || { y: 0.575, halfHeight: 0.165 };
 
@@ -186,8 +192,11 @@ const GATE_KIND = {
   spare_cyp3a4: "door",
   leave_the_dial_alone: "dial",
 };
-const SCENE_GATE = { dissolve: "dissolve", gut: "gut", pump: "gut", liver: "liver",
-                     binding: "binding", target: "target", door: "liver", dial: "liver" };
+// The journey scene names its stations; the patient scene asks for each door
+// and the dial by the identifier the data gave them.
+const SCENE_GATE = { dissolve: "dissolve", gut: "gut", pump: "pump", liver: "liver",
+                     binding: "binding", target: "target" };
+const sceneKey = (step) => SCENE_GATE[step.kind] || step.id;
 const ATTRITION_KINDS = new Set(["dissolve", "gut", "pump", "liver", "binding"]);
 const LOST_STATUS = { dissolve: "dissolving", gut: "bound", pump: "bounced",
                       liver: "shredded", binding: "bound" };
@@ -467,8 +476,14 @@ const buildPatient = (ward, compound, steps) => {
       return {
         name: med.name,
         gate: med.gate,
-        level: 0.5,
+        level: RESTING_LEVEL,
         danger: 0,
+        crossing: 0,
+        crossed: false,
+        over: false,
+        dry: false,
+        hold: 0,
+        unsettled: 0,
         unknown,
         note: unknown ? UNTESTED_VIAL.replace("{name}", med.name) : "",
       };
@@ -487,14 +502,18 @@ const buildRun = (ward, compound, virus, seed) => {
   const steps = buildSteps(ward, compound, virus, rand);
   const target = steps.find((step) => step.kind === "target") || null;
   const last = steps.length ? steps[steps.length - 1].end : 0;
+  const patient = buildPatient(ward, compound, steps);
+  // The last door or dial needs long enough after it for a vial to travel, stop
+  // on the line and then fill above it.
+  const tail = target ? FINALE_SECONDS
+    : (patient ? MOVE_SECONDS + CROSSING_BEAT + 0.8 : 1.0);
   return {
-    ward, compound, steps, target,
-    patient: buildPatient(ward, compound, steps),
+    ward, compound, steps, target, patient,
     molecules: makeMolecules(markLastAttrition(steps), rand),
     resolved: 0,
     t: 0,
     finaleAt: last,
-    endsAt: last + (target ? FINALE_SECONDS : 1.0) + OUTRO_SECONDS,
+    endsAt: last + tail + OUTRO_SECONDS,
     health: 1,
     message: null,
     tipDue: null,
@@ -521,9 +540,20 @@ const holdingCount = (molecules) => molecules.filter(
 const medicineFor = (run, gateId) => (run.patient
   ? run.patient.medicines.find((med) => med.gate === gateId) : null);
 
+// How hard the compound leans on a door. A gate the compound barely touches
+// leaves the vial under the line; one it sits in pushes the vial well past it.
+const lean = (score) => Math.pow(1 - clamp01(score), 1.6) * 0.6;
+
+// However far a vial has to travel, it takes about the same time to get there,
+// so the movement itself is legible rather than a jump.
+const aimAt = (med, level) => {
+  med.target = clamp01(level);
+  med.rate = Math.abs(med.target - med.level) / MOVE_SECONDS;
+};
+
 const applyDoor = (run, step) => {
   const med = medicineFor(run, step.id);
-  if (med && !step.untested) med.target = clamp01(0.5 + (1 - step.score) * 0.55);
+  if (med && !step.untested) aimAt(med, RESTING_LEVEL + lean(step.score));
 };
 
 // An untested door or dial moves nothing. A vial only rises or drains on the
@@ -532,8 +562,8 @@ const applyDial = (run, step) => {
   if (!run.patient || step.untested) return;
   for (const med of run.patient.medicines) {
     if (med.unknown) continue;
-    const from = med.target === undefined ? 0.5 : med.target;
-    med.target = clamp01(from - (1 - step.score) * 0.5);
+    const from = med.target === undefined ? RESTING_LEVEL : med.target;
+    aimAt(med, from - lean(step.score));
   }
 };
 
@@ -595,12 +625,45 @@ const moveMolecule = (run, stations, m, dt) => {
   if (!station && m.x > FINISH_X - 0.03) m.status = "arrived";
 };
 
+const dangerOf = (level) => {
+  if (level > PRESCRIBED_LEVEL) return clamp01((level - PRESCRIBED_LEVEL) / 0.3);
+  if (level < DRY_LEVEL) return clamp01((DRY_LEVEL - level) / 0.18);
+  return 0;
+};
+
+// A medicine crosses the prescribed line once, and that crossing is the moment
+// the patient is lost, so it gets a beat of its own: the level climbs at a
+// steady rate, stops dead on the line, and only then does the excess build up
+// above it. Draining reads the same way in the other direction.
+const stepLevel = (med, dt) => {
+  const want = med.target === undefined ? RESTING_LEVEL : med.target;
+  const rising = want > med.level;
+  const line = rising ? PRESCRIBED_LEVEL : DRY_LEVEL;
+  const next = med.level + (rising ? 1 : -1) * dt * (med.rate || 1 / MOVE_SECONDS);
+  const crosses = rising ? (med.level < line && next >= line)
+    : (med.level > line && next <= line);
+  if (crosses && !med.crossed) {
+    med.level = line;
+    med.crossed = true;
+    med.hold = CROSSING_BEAT;
+    med.crossing = 1;
+    if (rising) med.over = true; else med.dry = true;
+    return;
+  }
+  med.level = rising ? Math.min(next, want) : Math.max(next, want);
+};
+
 const updatePatient = (run, dt) => {
   if (!run.patient) return;
   for (const med of run.patient.medicines) {
-    const want = med.target === undefined ? 0.5 : med.target;
-    med.level += (want - med.level) * Math.min(1, dt * 1.1);
-    med.danger = clamp01((Math.abs(med.level - 0.5) - SAFE_BAND) / 0.25);
+    med.crossing = Math.max(0, (med.crossing || 0) - dt / 1.2);
+    // A door nobody measured leaves its vial unresolved for the whole run.
+    if (med.unknown) { med.unsettled = 0.5 + 0.5 * Math.sin(run.t * 2.1); continue; }
+    if (med.hold > 0) { med.hold = Math.max(0, med.hold - dt); continue; }
+    if (Math.abs((med.target === undefined ? RESTING_LEVEL : med.target) - med.level) > 0.001) {
+      stepLevel(med, dt);
+    }
+    med.danger = dangerOf(med.level);
   }
 };
 
@@ -640,14 +703,16 @@ const antiviralOutcome = (run, arrived, danger) => {
 };
 
 const harmText = (harmed) => {
-  const piled = harmed.filter((med) => med.level > 0.5);
+  const piled = harmed.filter((med) => med.over);
   if (!piled.length) return RESULTS.safetyDrained;
   if (harmed.length === 1) return RESULTS.safetyOne.replace("{name}", piled[0].name);
   return RESULTS.safetyMany;
 };
 
+// Crossing the prescribed line is what loses the patient. How far past it the
+// vial then climbs is what the score is made of.
 const patientOutcome = (run, arrived, danger) => {
-  const harmed = run.patient.medicines.filter((med) => med.danger >= 0.5);
+  const harmed = run.patient.medicines.filter((med) => med.over || med.dry);
   return {
     win: !harmed.length,
     text: harmed.length ? harmText(harmed) : RESULTS.safetyWon,
@@ -817,7 +882,7 @@ const fillState = (state, run, phase, banner) => {
   state.banner = banner;
   state.gates = {};
   for (const step of run.steps) {
-    const key = SCENE_GATE[step.kind];
+    const key = sceneKey(step);
     const open = stepOpen(step, run.t);
     const gate = state.gates[key] || {};
     gate.open = run.t < step.start ? (gate.open === undefined ? 1 : gate.open) : open;
