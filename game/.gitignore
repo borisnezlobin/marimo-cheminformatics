@@ -1,0 +1,6 @@
+art/illustrate-src/
+art/illus
+art/*.pdb
+art/*.pnm
+art/*.json
+drain.html

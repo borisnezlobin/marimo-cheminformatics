@@ -1,97 +1,53 @@
-# Does the plate predict the clinic?
+# Drain
 
-An interactive marimo notebook built for the molab Notebook Competition #3, run by
-marimo with OpenADMET.
+An interactive marimo notebook for the molab Notebook Competition #3, run by marimo
+with OpenADMET.
 
-A laboratory can measure how strongly a drug blocks a liver enzyme, cheaply and at
-scale. What anyone actually wants to know is how much a drug builds up inside a
-person, which needs a clinical study and exists for only a few hundred drugs. This
-notebook asks whether the cheap measurement predicts the expensive one, using the
-competition's own data.
-
-For CYP2D6 it does. Five drugs carry both a potency measured in OpenADMET's files and
-a published human exposure increase against the same victim drug, and a line fitted to
-four of them predicts the fifth to within 1.15-fold.
-
-For CYP3A4 it does not. Voriconazole, which FDA classifies as a strong blocker on the
-strength of human studies, reads as the weakest fitted value in the file, while
-isavuconazole, which FDA calls moderate, reads as the strongest. Only four drugs have
-both a published class and a measured potency on that enzyme, which is too thin to
-call a success rate in either direction, and that sparsity is itself the finding.
+Every medicine you swallow has to leave your body again, and most leave through a
+handful of liver enzymes. The notebook opens with a game in which you keep a
+medicine's level in a safe band while other drugs block, destroy or multiply the
+enzymes that clear it. Each of the nine levels teaches one idea, and the sections
+below the game show the OpenADMET measurements behind each one.
 
 ## Running it
 
 ```sh
-uv run --with marimo marimo edit plate_or_clinic.py
+uv run --with marimo marimo edit drain.py
 ```
 
-The script header pins every dependency, so `uv` will build the environment on first
-run. Nothing is downloaded at runtime: the notebook reads the small derived tables in
-`data/`, which the scripts in `build/` produce from the competition releases.
+The script header pins every dependency. The notebook reads its tables from
+`data/` and the game from `widgets/drain.js`. When those files are missing, for
+example when molab opens only the notebook file, it fetches the same files from
+this repository on GitHub.
 
 ## What is in here
 
 | Path | What it holds |
 | --- | --- |
-| `plate_or_clinic.py` | The notebook |
-| `theme.css` | Type and table styling, defined once |
-| `widgets/` | Four hand-written anywidget components |
-| `data/` | Derived tables the notebook reads, plus pre-rendered molecule drawings |
-| `build/` | Re-runnable scripts that produce everything in `data/` |
-| `build/VERIFIED.md` | Every headline number, recomputed from source, with its file named |
+| `drain.py` | The notebook |
+| `theme.css` | Type and component styles, defined once |
+| `widgets/drain.js` | The game as an anywidget module, built from `game/` |
+| `game/` | The game's sources: level physics, rendering, page shell, art, and balance simulations |
+| `data/` | Trimmed OpenADMET tables and the named-drug join |
+| `build/` | Re-runnable scripts that produce everything in `data/` and `widgets/` |
 
-### The widgets
+## The game
 
-`Gate` animates the mechanism. Molecules flow out through a liver enzyme, and raising
-the blockade fills the enzyme's slots with a second drug so traffic queues and the
-level in the bloodstream rises past a fixed reference line.
+`game/physics.js` holds the levels and the simulation. `game/game.js` draws it and
+handles input. `game/build.py` combines them with the art in `game/assets.js` into
+the widget and a standalone page.
 
-`Cabinet` takes medicines by name, brand names included, and shows which pairs meet at
-an enzyme. Every drug lands in one of three evidence states, told apart by icon shape,
-fill and wording rather than by colour alone.
+`node game/sim.js` plays every level with a bot that sees the level and with
+players who tap at a fixed rhythm, so a change to the physics shows at once whether
+a level is still winnable and whether it still punishes a player who ignores the
+liver. `node game/gate_sim.js` checks that the injections matter in the first-pass
+level.
 
-`Guess` gives you a plate reading and asks you to predict what it does inside a person,
-then reveals the published figure. The line you compete against is refitted without the
-drug it is predicting.
+The enzymes are crystal structures of CYP2D6 (PDB 2F9Q) and CYP3A4 (PDB 1TQN), and
+the drugs are RDKit conformers, all drawn with David S. Goodsell's Illustrate.
+`game/art/ligands.py` renders the drug sprites.
 
-`StereoEditor` draws a molecule with rdkit-js and lets you flip its stereocentres.
-Turning quinine into quinidine takes two flips and moves the measured potency 362-fold.
+## AI use
 
-Each widget keeps its own visual state in JavaScript, so all four stay alive in a
-static export with no Python kernel behind the page.
-
-## Where the numbers come from
-
-Potencies come from the OpenADMET CYP challenge training files, induction values from
-the PXR challenge, and clearance from the ExpansionRx release. Clinical exposure
-increases are quoted from FDA labels retrieved through openFDA. Enzyme roles and
-strength bands come from FDA's public-domain table of drugs that interact with CYP
-enzymes. `data/sources.json` records each source with its licence and the exact call
-that loads it.
-
-The competition datasets ship no drug names, so names were recovered by matching
-structures: salts stripped to the parent, stereochemistry preserved, and every match
-recorded in `data/measured_full_provenance.json` with the file and row it came from.
-The quinine section of the notebook exists because that decision changes answers.
-
-No model is fitted anywhere except the straight line the guessing game competes
-against, which is refitted without whichever drug it is predicting. Everything else
-shown is a measurement, or arithmetic on measurements.
-
-## What this notebook does not do
-
-It reports a documented mechanism and FDA's published exposure band. It does not
-predict anybody's blood concentration, because the quantities that would be needed,
-principally how much of a drug circulates unbound and how much of its clearance runs
-through the blocked enzyme, are not publicly available for most drugs. Interactions
-that travel by any route other than these enzymes are invisible to it. Warfarin taken
-with ibuprofen shows nothing here and is genuinely dangerous.
-
-None of this is medical advice.
-
-## Disclosure
-
-Written with AI assistance. Claude helped with the code and the drafting. Every number
-was recomputed from the source files and checked against the cited labels, and
-`build/VERIFIED.md` records those checks including the places where an early figure
-turned out to be wrong.
+Built with heavy help from Claude, Anthropic's model, running in Claude Code. The
+notebook's last section describes how.

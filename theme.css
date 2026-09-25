@@ -1,19 +1,17 @@
-@import url("https://fonts.googleapis.com/css2?family=Literata:opsz,wght@7..72,400..700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;750&display=swap");
 
-/* Type is defined once here. Marimo ships Lora for headings and PT Sans for
-   body; both are replaced. Literata carries an optical size axis, so headings
-   tighten as they grow. IBM Plex Mono appears only on figures that line up in a
-   column. */
 :root {
-  --nb-serif: Literata, Georgia, "Times New Roman", serif;
-  --nb-sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --nb-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --nb-measure: 68ch;
+  --nb-font: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --nb-measure: 66ch;
+  --nb-ink: #1A2124;
+  --nb-muted: #56636A;
+  --nb-quiet: #D5DDDA;
+  --nb-surface: #F6F8F7;
+  --nb-good: #3E9B6A;
+  --nb-radius: 12px;
 
-  /* Marimo reads these three for every heading, paragraph and code span. */
-  --heading-font: var(--nb-serif);
-  --text-font: var(--nb-sans);
-  --monospace-font: var(--nb-mono);
+  --heading-font: var(--nb-font);
+  --text-font: var(--nb-font);
 }
 
 .markdown,
@@ -21,9 +19,9 @@
 .markdown li,
 .markdown td,
 .markdown th {
-  font-family: var(--nb-sans);
+  font-family: var(--nb-font);
   font-size: 1.02rem;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 .markdown p,
@@ -34,50 +32,84 @@
 
 .markdown h1,
 .markdown h2,
-.markdown h3,
-.markdown h4 {
-  font-family: var(--nb-serif);
-  font-optical-sizing: auto;
-  font-weight: 600;
+.markdown h3 {
+  font-family: var(--nb-font);
+  font-weight: 750;
   line-height: 1.15;
   text-wrap: balance;
-  max-width: 34ch;
 }
 
-.markdown h1 {
-  font-size: 2.45rem;
-  font-variation-settings: "opsz" 48;
-  margin-bottom: 0.6rem;
-}
+.markdown h1 { font-size: 2.4rem; margin-bottom: 0.4rem; }
+.markdown h2 { font-size: 1.6rem; margin-top: 2.6rem; margin-bottom: 0.5rem; }
+.markdown h3 { font-size: 1.2rem; margin-top: 1.6rem; }
+.markdown strong { font-weight: 750; }
 
-.markdown h2 {
-  font-size: 1.62rem;
-  font-variation-settings: "opsz" 28;
-  margin-top: 2.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.markdown h3 {
-  font-size: 1.22rem;
-  font-variation-settings: "opsz" 18;
-  margin-top: 2rem;
-}
-
-.markdown strong {
-  font-weight: 600;
-}
-
-/* Every number that sits in a column of other numbers lines up. */
 table,
 .mo-table,
 [data-testid="marimo-plugin-data-table"] {
-  font-family: var(--nb-sans);
+  font-family: var(--nb-font);
   font-variant-numeric: tabular-nums;
 }
 
-table td:not(:first-child),
-.mo-table td:not(:first-child) {
-  font-family: var(--nb-mono);
-  font-size: 0.92rem;
-  font-variant-numeric: tabular-nums;
+.concepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
+
+.concept {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--nb-quiet);
+  color: var(--nb-muted);
+  font-family: var(--nb-font);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.concept--done {
+  background: var(--nb-ink);
+  color: #F6F8F7;
+}
+
+.concept svg { width: 1.1em; height: 1.1em; }
+
+.enzymes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: flex-end;
+}
+
+.enzymes figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.enzymes img { width: 150px; height: auto; }
+.enzymes figcaption { font-family: var(--nb-font); font-size: 0.92rem; color: var(--nb-muted); text-align: center; max-width: 22ch; }
+.enzymes figcaption strong { color: var(--nb-ink); }
+
+.pair {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.pair figure {
+  margin: 0;
+  flex: 1 1 240px;
+  padding: 12px;
+  border-radius: var(--nb-radius);
+  background: var(--nb-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pair svg { width: 100%; height: auto; }
+.pair figcaption { font-family: var(--nb-font); font-size: 0.95rem; color: var(--nb-muted); }
+.pair figcaption strong { color: var(--nb-ink); font-size: 1.05rem; }

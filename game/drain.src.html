@@ -1,0 +1,335 @@
+<title>Drain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;750&display=swap">
+<style>
+  :root {
+    --page: #E4EAE8;
+    --surface: #F6F8F7;
+    --ink: #1A2124;
+    --muted: #56636A;
+    --quiet: #D5DDDA;
+    --strong: #1A2124;
+    --strong-ink: #F6F8F7;
+    --cooling: #5B686E;
+    --good: #3E9B6A;
+    --focus: #4F8DB8;
+    --star: #D9A92E;
+    --star-off: #9AA7A2;
+    --board-paper: #EDF1F0;
+    --shadow: 0 1px 2px rgba(26, 33, 36, 0.08), 0 12px 32px rgba(26, 33, 36, 0.14);
+
+    --text-sm: 0.875rem;
+    --text-md: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.5rem;
+
+    --radius-control: 12px;
+    --pad-card: 12px;
+    --radius-card: calc(var(--radius-control) + var(--pad-card));
+    --inset-board: 10px;
+    --radius-board: calc(var(--radius-card) + var(--inset-board));
+    --gap: 12px;
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+
+    font-family: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --page: #0F1416;
+      --surface: #1A2225;
+      --ink: #E3EAE8;
+      --muted: #9CA9A5;
+      --quiet: #283236;
+      --strong: #E3EAE8;
+      --strong-ink: #0F1416;
+      --cooling: #7D8A86;
+      --good: #53B784;
+      --focus: #7FB6DA;
+      --star: #EFC94C;
+      --star-off: #5F6B68;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0F1416;
+    --surface: #1A2225;
+    --ink: #E3EAE8;
+    --muted: #9CA9A5;
+    --quiet: #283236;
+    --strong: #E3EAE8;
+    --strong-ink: #0F1416;
+    --cooling: #7D8A86;
+    --good: #53B784;
+    --focus: #7FB6DA;
+    --star: #EFC94C;
+    --star-off: #5F6B68;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+
+  body {
+    background: var(--page);
+    color: var(--ink);
+    padding-inline: 16px;
+    padding-block: 20px 36px;
+    font-size: var(--text-md);
+    line-height: 1.5;
+  }
+  .stage {
+    max-width: 460px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+  }
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--gap);
+  }
+  h1 {
+    margin: 0;
+    font-size: var(--text-xl);
+    font-weight: 750;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+  [hidden] { display: none !important; }
+
+  .icon { display: inline-flex; width: 1.2em; height: 1.2em; flex: none; }
+  .icon svg { width: 100%; height: 100%; }
+
+  .button {
+    appearance: none;
+    border: 0;
+    font: inherit;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-control);
+    background: var(--quiet);
+    color: var(--ink);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition-property: transform;
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease);
+  }
+  .button:active { transform: scale(0.96); }
+  .button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .button:disabled { opacity: 0.4; cursor: default; }
+  .button--primary,
+  .button[aria-pressed="true"] { background: var(--strong); color: var(--strong-ink); }
+  .hit {
+    appearance: none;
+    position: absolute;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: var(--radius-control);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition-property: background-color;
+    transition-duration: 150ms;
+    transition-timing-function: var(--ease);
+  }
+  .hit:hover:not(:disabled) { background-color: rgba(26, 33, 36, 0.05); }
+  .hit:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  .hit:disabled { cursor: default; }
+  .hit--nudge { animation: nudge 1.2s var(--ease) infinite; }
+  @keyframes nudge {
+    from { box-shadow: 0 0 0 0 var(--focus); }
+    to { box-shadow: 0 0 0 14px transparent; }
+  }
+  .button--stack { flex-direction: column; gap: 2px; }
+
+  .board {
+    position: relative;
+    border-radius: var(--radius-board);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: var(--board-paper);
+  }
+  canvas {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    aspect-ratio: 400 / 560;
+    touch-action: manipulation;
+  }
+  .score {
+    position: absolute;
+    top: var(--inset-board);
+    right: var(--inset-board);
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(246, 248, 247, 0.9);
+    color: #1A2124;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .tip {
+    position: absolute;
+    left: 50%;
+    max-width: calc(100% - 2 * var(--inset-board));
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: var(--strong);
+    color: var(--strong-ink);
+    font-weight: 600;
+    text-align: center;
+    text-wrap: balance;
+    box-shadow: var(--shadow);
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, calc(-100% + 4px));
+    transition-property: opacity, transform;
+    transition-duration: 200ms;
+    transition-timing-function: var(--ease);
+  }
+  .tip[data-visible="true"] { opacity: 1; transform: translate(-50%, calc(-100% - 8px)); }
+  .tip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: var(--caret, 50%);
+    width: 16px;
+    height: 9px;
+    background: var(--strong);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform: translateX(-50%);
+  }
+  .tip--below::after { top: auto; bottom: 100%; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .tip--below { transform: translate(-50%, 4px); }
+  .tip--below[data-visible="true"] { transform: translate(-50%, 8px); }
+
+  .result {
+    position: absolute;
+    inset: var(--inset-board) var(--inset-board) auto var(--inset-board);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: var(--pad-card);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: var(--shadow);
+  }
+  .result-head, .meter, .reveal { padding-inline: 6px; }
+  .result-head { display: flex; justify-content: space-between; align-items: center; gap: var(--gap); padding-top: 4px; }
+  .result h2 { margin: 0; font-size: var(--text-xl); font-weight: 750; line-height: 1.2; }
+  .meter { display: flex; align-items: center; gap: 10px; }
+  .meter-track { flex: 1; height: 8px; border-radius: 999px; background: var(--quiet); overflow: hidden; }
+  .meter-fill { display: block; height: 100%; background: var(--good); }
+  .meter-value { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .reveal { margin: 0; color: var(--muted); text-wrap: pretty; }
+  .reveal strong { color: var(--ink); font-weight: 750; }
+  .actions { display: flex; gap: 8px; }
+  .actions .button { flex: 1; }
+  .stars { display: flex; gap: 3px; }
+  .star { display: inline-flex; width: 24px; height: 24px; color: var(--star-off); }
+  .star.on { color: var(--star); }
+  .star svg { width: 100%; height: 100%; }
+
+  .level-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--gap); }
+  .world {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: var(--pad-card);
+    border-radius: var(--radius-card);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+  .world-art { width: 56px; height: 56px; flex: none; object-fit: contain; }
+  .world-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .world-name { margin: 0; font-size: var(--text-lg); font-weight: 750; }
+  .world-enzyme { margin: 0; color: var(--muted); font-size: var(--text-sm); }
+  .world-levels { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 8px; }
+  .level-button { align-items: flex-start; text-align: left; }
+  .level-button.current { box-shadow: 0 0 0 2.5px var(--ink); }
+  .level-stars { display: flex; gap: 2px; }
+  .level-stars .star { width: 16px; height: 16px; }
+
+  .about { color: var(--muted); font-size: var(--text-sm); }
+  .about summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    list-style: none;
+  }
+  .about summary::-webkit-details-marker { display: none; }
+  .about summary:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+  .about p { margin: 8px 0 0; text-wrap: pretty; }
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .button, .tip { transition-duration: 0ms; }
+    .hit { transition-duration: 0ms; }
+    .hit--nudge { animation: none; box-shadow: 0 0 0 3px var(--focus); }
+  }
+</style>
+
+<main class="stage">
+  <div class="top">
+    <h1 id="level-title">Find the rhythm</h1>
+    <button type="button" class="button" id="show-levels" aria-pressed="false">
+      <span class="icon" data-icon="squares-four"></span>All levels
+    </button>
+  </div>
+
+  <section id="game-view" class="stage">
+    <div class="board">
+      <canvas id="board" role="img" aria-label="A beaker of medicine draining into a row of liver enzymes"></canvas>
+      <div id="hits"></div>
+      <span class="score" id="score">0% in the green</span>
+      <p class="tip" id="tip" aria-hidden="true"></p>
+      <section class="result" id="result" hidden aria-live="polite">
+        <div class="result-head">
+          <h2 id="result-title"></h2>
+          <div class="stars" id="result-stars" role="img"></div>
+        </div>
+        <div class="meter" id="result-meter" role="img">
+          <span class="meter-track"><span class="meter-fill" id="result-fill"></span></span>
+          <span class="meter-value" id="result-value"></span>
+        </div>
+        <p class="reveal" id="result-reveal"></p>
+        <div class="actions">
+          <button type="button" class="button" id="retry"><span class="icon" data-icon="arrow-counter-clockwise"></span>Try again</button>
+          <button type="button" class="button button--primary" id="next"><span class="label">Next level</span><span class="icon" data-icon="arrow-right"></span></button>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <section id="levels-view" hidden>
+    <ol class="level-list" id="level-list"></ol>
+  </section>
+
+  <details class="about">
+    <summary><span class="icon" data-icon="info"></span>Where the data and drawings come from</summary>
+    <p>Drug names, and which drug blocks, destroys or multiplies each enzyme, come from OpenADMET's CYP and PXR data. Timing and strengths are tuned for play. Keyboard: Space doses the first beaker, 1 to 3 the others, and R, I or B uses the tokens in the corner. The enzymes are crystal structures of CYP2D6 (PDB 2F9Q) and CYP3A4 (PDB 1TQN), and the drugs are their 3D shapes, drawn with Illustrate by David S. Goodsell.</p>
+  </details>
+  <p class="visually-hidden" id="announcer" aria-live="polite"></p>
+</main>
+
+<script>
+/*ASSETS*/
+/*PHYSICS*/
+/*GAME*/
+</script>
