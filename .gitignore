@@ -5,4 +5,5 @@ __pycache__/
 build/cache/
 widgets/screenshots/
 CONTRACT.md
-__marimo__/
+__marimo__/*
+!__marimo__/session/

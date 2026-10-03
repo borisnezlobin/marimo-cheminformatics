@@ -27,6 +27,7 @@ this repository on GitHub.
 | `drain.py` | The notebook |
 | `theme.css` | Type and component styles, defined once |
 | `widgets/drain.js` | The game as an anywidget module, built from `game/` |
+| `widgets/clash.js` | The interaction-model widget behind "Will two medicines clash?", hand-written |
 | `game/` | The game's sources: level physics, rendering, page shell, art, and balance simulations |
 | `data/` | Trimmed OpenADMET tables and the named-drug join |
 | `build/` | Re-runnable scripts that produce everything in `data/` and `widgets/` |

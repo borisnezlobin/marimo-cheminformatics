@@ -342,13 +342,18 @@ function mountDrain(root, host = {}) {
     ui.resultMeter.setAttribute("aria-label", `In the green ${rounded}% of the time`);
     ui.resultFill.style.width = `${rounded}%`;
     ui.resultValue.textContent = `${rounded}%`;
-    if (survived) ui.resultReveal.innerHTML = `You just learned about <strong>${level.learned}</strong>. ${level.reveal}`;
-    else ui.resultReveal.textContent = `The ${plainLabel(level.tanks[state.overdosedTank ?? 0].label)} medicine passed the orange line at ${Math.round(state.time)} seconds.`;
+    ui.resultReveal.innerHTML = survived ? `You just learned about <strong>${level.learned}</strong>. ${level.reveal}` : overdoseExplanation();
     const isLast = levelIndex === LEVELS.length - 1;
     ui.next.querySelector(".label").textContent = isLast ? "Back to level 1" : "Next level";
     hideTip();
     ui.result.hidden = false;
     ui.next.focus({ preventScroll: true });
+  }
+
+  function overdoseExplanation() {
+    const spec = level.tanks[state.overdosedTank ?? 0];
+    const signs = OVERDOSE_SIGNS[spec.medicine] ?? `The ${plainLabel(spec.label)} medicine passed the orange line, where it starts to do harm.`;
+    return `${signs} <span class="reveal-hint">${level.hint ?? level.reveal}</span>`;
   }
 
   function updateScore() {

@@ -14,7 +14,7 @@ from pathlib import Path
 GAME = Path(__file__).parent
 WIDGETS = GAME.parent / "widgets"
 FONT_URL = "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;750&display=swap"
-NODE_EXPORT = 'if (typeof module !== "undefined") module.exports = { Physics, WORLDS, LEVELS };'
+NODE_EXPORT = 'if (typeof module !== "undefined") module.exports = { Physics, WORLDS, LEVELS, OVERDOSE_SIGNS };'
 
 STANDALONE_BOOT = """
 const stage = document.querySelector("main.stage");

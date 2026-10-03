@@ -7,7 +7,6 @@ traced back to the original file named in ``sources.py``.
 
 from pathlib import Path
 
-import pandas as pd
 
 from sources import SOURCES
 

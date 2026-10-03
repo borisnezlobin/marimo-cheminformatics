@@ -187,9 +187,20 @@ const WORLDS = [
   { name: "Two prescriptions", enzyme: "cyp2d6", enzymeName: "CYP2D6" },
   { name: "The gatekeeper", enzyme: "cyp3a4", enzymeName: "CYP3A4" },
   { name: "Paxlovid", enzyme: "cyp3a4", enzymeName: "CYP3A4" },
-  { name: "Blind", enzyme: "cyp2d6", enzymeName: "CYP2D6" },
+  { name: "Blind", enzyme: "cyp3a4", enzymeName: "CYP3A4" },
+  { name: "Broken", enzyme: "cyp2d6", enzymeName: "CYP2D6" },
   { name: "A week on antifungals", enzyme: "cyp3a4", enzymeName: "CYP3A4" },
 ];
+
+const OVERDOSE_SIGNS = {
+  metoprolol: "Too much metoprolol slows the heart and drops blood pressure, which can make you dizzy or faint.",
+  paroxetine: "Too much paroxetine can cause serotonin toxicity, which brings agitation, shaking, sweating and a racing heart.",
+  felodipine: "Too much felodipine drops blood pressure too far and brings on flushing, headache and a pounding heart.",
+  nirmatrelvir: "Nirmatrelvir has no well-known overdose picture. Its common side effects are a bitter, metallic taste and diarrhea.",
+  midazolam: "Too much midazolam sedates deeply and can slow breathing.",
+  simvastatin: "Too much simvastatin breaks down muscle, and the debris from that muscle can harm the kidneys.",
+  isavuconazole: "Too much isavuconazole strains the liver and brings on nausea.",
+};
 
 const STANDARD_BAND = [0.4, 0.66];
 
@@ -199,16 +210,18 @@ const LEVELS = [
     tanks: [{ medicine: "metoprolol", label: "Blood pressure", drain: 0.3, dose: 0.3, band: STANDARD_BAND, key: "Space" }],
     tips: [
       { when: "start", anchor: "tank", text: "Tap the beaker to take a pill", until: "pill" },
-      { when: "time:2.5", anchor: "tank", text: "Keep the water inside the green band" },
+      { when: "time:2.5", anchor: "tank", text: "The green band is the dose that works" },
       { when: "nearTop", anchor: "liver", text: "Wait while the enzymes drain it" },
     ],
+    hint: "The enzymes need time to clear each pill. Wait for the level to drop toward the bottom of the band before the next tap.",
     learned: "drug clearance", reveal: "Liver enzymes remove medicine from your blood, so doses have to keep coming.",
   },
   {
     world: 0, title: "The slow one", duration: 22,
     tanks: [{ medicine: "metoprolol", label: "Blood pressure", drain: 0.12, dose: 0.3, band: STANDARD_BAND, key: "Space" }],
     tips: [{ when: "start", anchor: "liver", text: "These enzymes clear this medicine slowly" }],
-    learned: "half-life", reveal: "A medicine that clears slowly lasts longer, so it needs fewer doses and forgives fewer mistakes.",
+    hint: "This medicine clears slowly, so each pill stays longer. Space your doses further apart than in the last level.",
+    learned: "half-life", reveal: "A medicine that clears slowly lasts longer, so it needs fewer doses, and an extra pill takes longer to wash out.",
   },
   {
     world: 1, title: "Two prescriptions", duration: 36,
@@ -220,6 +233,7 @@ const LEVELS = [
       { when: "start", anchor: "tank", text: "Tap a beaker to dose it" },
       { when: "time:4", anchor: "liver", text: "The depression pill also jams the enzymes" },
     ],
+    hint: "The depression pill jams the enzymes that clear both pills, so both build up faster than either would alone. Dose both less often.",
     learned: "drug interactions", reveal: "The depression pill blocked the enzyme that clears both pills, so both built up.",
   },
   {
@@ -230,6 +244,7 @@ const LEVELS = [
       { when: "start", anchor: "gate", text: "The liver takes an unpredictable bite of each pill" },
       { when: "time:4", anchor: "tokens", text: "Injections skip the liver and give an exact dose" },
     ],
+    hint: "The liver's bite varies, so some pills hit much harder than others. Use injections when you need an exact amount.",
     learned: "first-pass metabolism", reveal: "Swallowed pills pass through the liver before your blood and lose part of each dose there. Injections skip it.",
   },
   {
@@ -238,6 +253,7 @@ const LEVELS = [
     injections: { count: 3, amount: 0.22 },
     events: [{ drug: "isavuconazole", label: "An antifungal", kind: "sits", block: 0.6, start: [6, 10], length: [9, 12] }],
     tips: [],
+    hint: "While the antifungal blocks the enzymes, more of each pill gets through and it clears more slowly. Cut back as soon as it arrives.",
     learned: "enzyme inhibition", reveal: "A blocked liver lets more of each pill through and clears it more slowly, so every dose hits twice.",
   },
   {
@@ -248,28 +264,31 @@ const LEVELS = [
       { when: "start", anchor: "liver", text: "The COVID pill drains almost at once" },
       { when: "time:3", anchor: "tokens", text: "Ritonavir disables the enzymes" },
     ],
+    hint: "Each ritonavir dose keeps the enzymes down for a while. Let the level fall before you boost again.",
     learned: "boosting", reveal: "Paxlovid pairs these two drugs because ritonavir blocks the liver enzyme that would clear the COVID drug.",
   },
   {
     world: 4, title: "Blind", duration: 38, bloodTests: 3, blind: true, turnover: 0.09,
-    tanks: [{ medicine: "metoprolol", label: "Blood pressure", drain: 0.3, dose: 0.3, band: [0.38, 0.7], key: "Space" }],
+    tanks: [{ medicine: "midazolam", label: "Sedative", drain: 0.3, dose: 0.3, band: [0.38, 0.7], key: "Space" }],
     events: [{ drug: "rifampicin", label: "An antibiotic", kind: "induces", induce: 1.5, start: [5, 8], length: [12, 15] }],
     tips: [
       { when: "start", anchor: "tank", text: "You can't see the level anymore" },
       { when: "time:2.5", anchor: "tokens", text: "A blood test shows the level for 2 seconds" },
       { when: "event", anchor: "liver", text: "Watch the enzymes for clues" },
     ],
+    hint: "Once the antibiotic stops, the extra enzyme fades and the drain slows back down. Ease off after it leaves.",
     learned: "enzyme induction", reveal: "The antibiotic made the liver build extra enzyme, which cleared medicine faster and lingered after the last dose.",
   },
   {
-    world: 4, title: "Blind, and broken", duration: 36, bloodTests: 3, blind: true,
+    world: 5, title: "Blind, and broken", duration: 36, bloodTests: 3, blind: true,
     tanks: [{ medicine: "metoprolol", label: "Blood pressure", drain: 0.3, dose: 0.3, band: [0.38, 0.7], key: "Space" }],
     events: [{ drug: "ritonavir", label: "An HIV medicine", kind: "breaks", block: 0.25, kill: 0.2, start: [6, 11], length: [8, 12] }],
     tips: [],
+    hint: "Ritonavir destroyed enzyme, so the drain stays slow until the liver builds more, even after ritonavir stops. Keep doses sparse for a while.",
     learned: "time-dependent inhibition", reveal: "Some drugs destroy the enzyme instead of blocking it, so the drain stays slow until the liver builds more.",
   },
   {
-    world: 5, title: "A week on antifungals", duration: 48,
+    world: 6, title: "A week on antifungals", duration: 48,
     tanks: [
       { medicine: "isavuconazole", label: "Fungal infection", drain: 0.35, dose: 0.3, band: [0.38, 0.7], compete: 0.9, key: "Space" },
       { medicine: "simvastatin", label: "Cholesterol", drain: 0.45, dose: 0.36, band: [0.3, 0.72], auto: { period: 1.8, offset: 0.2 }, key: "Digit1" },
@@ -280,8 +299,9 @@ const LEVELS = [
       { when: "start", anchor: "tank", text: "Tap the antifungal to dose it" },
       { when: "time:5", anchor: "tank:1", text: "Tap any other beaker to pause it" },
     ],
+    hint: "The antifungal blocks the enzyme the other three medicines need. Pause them while the antifungal course runs.",
     learned: "managing interactions", reveal: "One way doctors handle an interaction is to pause a medicine for the length of a short course.",
   },
 ];
 
-if (typeof module !== "undefined") module.exports = { Physics, WORLDS, LEVELS };
+if (typeof module !== "undefined") module.exports = { Physics, WORLDS, LEVELS, OVERDOSE_SIGNS };

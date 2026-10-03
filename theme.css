@@ -10,6 +10,14 @@
   --nb-good: #3E9B6A;
   --nb-radius: 12px;
 
+  --game-ink: #1A2124;
+  --game-water: #D4E6F1;
+  --game-band: #3E9B6A;
+  --game-band-wash: rgba(62, 155, 106, 0.16);
+  --game-danger: #FF6A1F;
+  --game-tissue: #E0E8E5;
+  --game-blood: #B8483E;
+
   --heading-font: var(--nb-font);
   --text-font: var(--nb-font);
 }
@@ -25,6 +33,7 @@
 }
 
 .markdown p,
+.markdown .paragraph,
 .markdown ul,
 .markdown ol {
   max-width: var(--nb-measure);
@@ -113,3 +122,29 @@ table,
 .pair svg { width: 100%; height: auto; }
 .pair figcaption { font-family: var(--nb-font); font-size: 0.95rem; color: var(--nb-muted); }
 .pair figcaption strong { color: var(--nb-ink); font-size: 1.05rem; }
+
+.key {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px 24px;
+  margin: 0;
+  max-width: 100%;
+}
+
+.key div { display: grid; gap: 2px; }
+.key dt { display: flex; align-items: center; gap: 10px; font-family: var(--nb-font); font-weight: 750; color: var(--nb-ink); }
+.key dd { margin: 0 0 0 38px; font-family: var(--nb-font); font-size: 0.95rem; color: var(--nb-muted); line-height: 1.45; }
+
+.glyph { flex: none; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; object-fit: contain; }
+.glyph--level { background: linear-gradient(to top, var(--game-water) 55%, transparent 55%); box-shadow: inset 2.5px 0 0 var(--game-ink), inset -2.5px 0 0 var(--game-ink), inset 0 -2.5px 0 var(--game-ink); }
+.glyph--band { height: 16px; background: var(--game-band-wash); border-top: 2px dashed var(--game-band); border-bottom: 2px dashed var(--game-band); }
+.glyph--toxic { height: 3px; background: var(--game-danger); box-shadow: 0 0 8px var(--game-danger); }
+.glyph--gate { height: 14px; background: var(--game-tissue); }
+.glyph--icon svg { width: 24px; height: 24px; fill: var(--game-ink); }
+.glyph--blood svg { fill: var(--game-blood); }
+
+.inchikey { font-size: 0.95rem; }
+.inchikey mark { background: var(--game-band-wash); color: inherit; }
+
+.lookup-structure { margin: 0; width: min(300px, 100%); }
+.lookup-structure svg { width: 100%; height: auto; }
