@@ -10,6 +10,12 @@
   --nb-good: #3E9B6A;
   --nb-radius: 12px;
 
+  --nb-text-body: 1.0625rem;
+  --nb-text-small: 0.9375rem;
+  --nb-text-h1: 2.5rem;
+  --nb-text-h2: 1.625rem;
+  --nb-text-h3: 1.25rem;
+
   --game-ink: #1A2124;
   --game-water: #D4E6F1;
   --game-band: #3E9B6A;
@@ -23,12 +29,21 @@
 }
 
 .markdown,
+.concepts,
+.enzymes,
+.pair,
+.key,
+table,
+.mo-table,
+[data-testid="marimo-plugin-data-table"] {
+  font-family: var(--nb-font);
+}
+
 .markdown p,
 .markdown li,
 .markdown td,
 .markdown th {
-  font-family: var(--nb-font);
-  font-size: 1.02rem;
+  font-size: var(--nb-text-body);
   line-height: 1.6;
 }
 
@@ -42,21 +57,19 @@
 .markdown h1,
 .markdown h2,
 .markdown h3 {
-  font-family: var(--nb-font);
   font-weight: 750;
   line-height: 1.15;
   text-wrap: balance;
 }
 
-.markdown h1 { font-size: 2.4rem; margin-bottom: 0.4rem; }
-.markdown h2 { font-size: 1.6rem; margin-top: 2.6rem; margin-bottom: 0.5rem; }
-.markdown h3 { font-size: 1.2rem; margin-top: 1.6rem; }
+.markdown h1 { font-size: var(--nb-text-h1); margin-bottom: 0.4rem; }
+.markdown h2 { font-size: var(--nb-text-h2); margin-top: 2.6rem; margin-bottom: 0.5rem; }
+.markdown h3 { font-size: var(--nb-text-h3); margin-top: 1.6rem; }
 .markdown strong { font-weight: 750; }
 
 table,
 .mo-table,
 [data-testid="marimo-plugin-data-table"] {
-  font-family: var(--nb-font);
   font-variant-numeric: tabular-nums;
 }
 
@@ -77,9 +90,8 @@ table,
   border-radius: 999px;
   background: var(--nb-quiet);
   color: var(--nb-muted);
-  font-family: var(--nb-font);
   font-weight: 600;
-  font-size: 0.92rem;
+  font-size: var(--nb-text-small);
   text-decoration: none;
 }
 
@@ -99,7 +111,7 @@ table,
 
 .enzymes figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .enzymes img { width: 150px; height: auto; }
-.enzymes figcaption { font-family: var(--nb-font); font-size: 0.92rem; color: var(--nb-muted); text-align: center; max-width: 22ch; }
+.enzymes figcaption { font-size: var(--nb-text-small); color: var(--nb-muted); text-align: center; max-width: 22ch; }
 .enzymes figcaption strong { color: var(--nb-ink); }
 
 .pair {
@@ -120,8 +132,8 @@ table,
 }
 
 .pair svg { width: 100%; height: auto; }
-.pair figcaption { font-family: var(--nb-font); font-size: 0.95rem; color: var(--nb-muted); }
-.pair figcaption strong { color: var(--nb-ink); font-size: 1.05rem; }
+.pair figcaption { font-size: var(--nb-text-small); color: var(--nb-muted); }
+.pair figcaption strong { color: var(--nb-ink); font-size: var(--nb-text-body); }
 
 .key {
   display: grid;
@@ -132,8 +144,8 @@ table,
 }
 
 .key div { display: grid; gap: 2px; }
-.key dt { display: flex; align-items: center; gap: 10px; font-family: var(--nb-font); font-weight: 750; color: var(--nb-ink); }
-.key dd { margin: 0 0 0 38px; font-family: var(--nb-font); font-size: 0.95rem; color: var(--nb-muted); line-height: 1.45; }
+.key dt { display: flex; align-items: center; gap: 10px; font-weight: 750; color: var(--nb-ink); }
+.key dd { margin: 0 0 0 38px; font-size: var(--nb-text-small); color: var(--nb-muted); line-height: 1.45; }
 
 .glyph { flex: none; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; object-fit: contain; }
 .glyph--level { background: linear-gradient(to top, var(--game-water) 55%, transparent 55%); box-shadow: inset 2.5px 0 0 var(--game-ink), inset -2.5px 0 0 var(--game-ink), inset 0 -2.5px 0 var(--game-ink); }
@@ -143,7 +155,7 @@ table,
 .glyph--icon svg { width: 24px; height: 24px; fill: var(--game-ink); }
 .glyph--blood svg { fill: var(--game-blood); }
 
-.inchikey { font-size: 0.95rem; }
+.inchikey { font-size: var(--nb-text-small); }
 .inchikey mark { background: var(--game-band-wash); color: inherit; }
 
 .lookup-structure { margin: 0; width: min(300px, 100%); }

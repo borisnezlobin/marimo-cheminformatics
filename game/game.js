@@ -1085,6 +1085,7 @@ function mountDrain(root, host = {}) {
   function resize() {
     const ratio = window.devicePixelRatio || 1;
     const cssWidth = canvas.clientWidth;
+    if (!cssWidth) return;
     canvas.width = Math.round(cssWidth * ratio);
     canvas.height = Math.round(cssWidth * (BOARD_H / BOARD_W) * ratio);
     const scale = (cssWidth / BOARD_W) * ratio;

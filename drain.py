@@ -98,16 +98,18 @@ def _(mo, read_text):
     mo.vstack([mo.Html(f"<style>{read_text('theme.css')}</style>"), mo.md(r"""
     # Drain
 
-    *By Boris Nezlobin, built with heavy help from Claude in Claude Code. The last section says how.*
+    *By Boris Nezlobin, built with help from Claude Code.*
 
-    Every medicine you swallow has to leave your body again, and most of them leave
-    through a handful of enzymes in your liver. When two medicines compete for those
-    enzymes, one of them can build up until a safe dose turns into an overdose.
+    A handful of enzymes in your liver break down most medicines you swallow.
+    When two medicines are broken down by the same enzymes, one of them can build up and
+    turn a safe dose into a dangerous overdose.
 
     OpenADMET measured how strongly thousands of compounds block four of those enzymes.
-    This notebook asks whether a number measured in a plastic well can tell you that two
-    medicines will clash in a person. The game below is built on those measurements, so
-    play a few levels first.
+    This notebook's question is simple: can a number measured in a plastic well tell you that two
+    medicines will clash in a person?
+
+    The game below is built on OpenADMET measurements and will help you get a visual understanding
+    of what's going on—play a couple of levels!
     """)])
     return
 
@@ -122,14 +124,9 @@ def _(drain):
 def _(drain, mo):
     CONCEPTS = [
         ("drug clearance", "enzymes"),
-        ("half-life", "enzymes"),
-        ("drug interactions", "inhibition"),
         ("first-pass metabolism", "first-pass"),
-        ("enzyme inhibition", "inhibition"),
-        ("boosting", "boosting"),
-        ("enzyme induction", "induction"),
-        ("time-dependent inhibition", "tdi"),
-        ("managing interactions", "tastes"),
+        ("drug interactions", "inhibition"),
+        ("drug monitoring", "enzymes"),
     ]
     CHECK = '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M232.49,80.49l-128,128a12,12,0,0,1-17,0l-56-56a12,12,0,1,1,17-17L96,183,215.51,63.51a12,12,0,0,1,17,17Z"/></svg>'
 
@@ -229,9 +226,8 @@ def _(ICONS, SPRITES, inhibition, mo):
         ('<span class="glyph glyph--toxic"></span>', "Toxic level", "Above this line the drug does harm. The game calls crossing it an overdose."),
         (f'<img class="glyph" src="{SPRITES["cyp2d6"]}" alt="">', "Liver enzymes", "These CYP enzymes clear the drug. A blocked copy wears the blocking drug, and a destroyed copy fades away."),
         (f'<span class="glyph glyph--icon">{ICONS["pill"]}</span>', "A dose by mouth", "Each tap swallows a pill."),
-        ('<span class="glyph glyph--gate"></span>', "Gut wall and liver", "The band at the top of the gatekeeper levels takes a bite of each swallowed pill before it reaches your blood."),
-        (f'<span class="glyph glyph--icon">{ICONS["syringe"]}</span>', "An injection", "It goes straight into a vein and skips that first bite."),
-        (f'<span class="glyph glyph--icon glyph--blood">{ICONS["drop"]}</span>', "A blood test", "In the blind levels it is the only way to see the level, as it is in a clinic."),
+        ('<span class="glyph glyph--gate"></span>', "Gut wall and liver", "In the second level, the band at the top takes a bite of each swallowed pill before it reaches your blood."),
+        (f'<span class="glyph glyph--icon glyph--blood">{ICONS["drop"]}</span>', "A blood test", "In the fourth level a blood test is the only way to see the level, as it is in a clinic."),
     ]
     _rows = "".join(f"<div><dt>{glyph}{name}</dt><dd>{meaning}</dd></div>" for glyph, name, meaning in _key)
     mo.vstack([
@@ -249,23 +245,26 @@ def _(ICONS, SPRITES, inhibition, mo):
             The row of molecules at the bottom is a family of liver enzymes called cytochrome
             P450, written CYP. Each one grabs a drug molecule, attaches an oxygen atom to it,
             and lets it go in a form the kidneys can flush out. The red patch in the middle of
-            each drawing is the heme. The heme is a ring that holds an iron atom, the chemistry
-            happens there, and many blocking drugs sit on it.
+            each drawing is the heme. It's a ring that holds an iron atom, and the oxygen gets
+            attached at that iron. Many blocking drugs work by sitting on it.
 
             A medicine's **half-life** is the time it takes for half of it to leave your blood.
             The faster the enzymes clear a medicine, the shorter its half-life. Half-life also
             depends on how widely the drug spreads through your body, and the game leaves that
             part out. The first level makes you tap in a steady rhythm because its medicine has
             a short half-life.
+
+            CYP3A4 alone breaks down about half of all medicines, so three of the four levels
+            run on it.
             """
         ),
         mo.Html(
             f"""
             <div class="enzymes">
               <figure><img src="{SPRITES['cyp2d6']}" alt="CYP2D6 enzyme, cut open to show the heme">
-                <figcaption><strong>CYP2D6</strong><br>{_counts['CYP2D6']:,} compounds measured by OpenADMET</figcaption></figure>
+                <figcaption><strong>CYP2D6</strong><br>{_counts['CYP2D6']:,} compounds measured</figcaption></figure>
               <figure><img src="{SPRITES['cyp3a4']}" alt="CYP3A4 enzyme, cut open to show the heme">
-                <figcaption><strong>CYP3A4</strong><br>acts on about half of known drugs, and {_counts['CYP3A4']:,} compounds were measured</figcaption></figure>
+                <figcaption><strong>CYP3A4</strong><br>{_counts['CYP3A4']:,} compounds measured</figcaption></figure>
             </div>
             """
         ),
@@ -319,7 +318,7 @@ def _(direct_potency, mo):
     OpenADMET put each compound in a well with one enzyme and a substance that enzyme
     normally breaks down. Then it measured how much the compound slowed the enzyme at
     12 different concentrations. The concentration that cuts the enzyme's speed in half
-    is called the **IC50**. Paroxetine, the depression pill in the game, half-blocks
+    is called the **IC50**. Paroxetine, an antidepressant, half-blocks
     CYP2D6 at {10 ** (6 - _paroxetine):.1f} micromolar.
 
     IC50s span a huge range, so labs report them on a log scale called **pIC50**. It works
@@ -479,8 +478,7 @@ def _(
             The highlighted atoms are the two flipped centres. The other two point the same way in
             both, so the molecules are not mirror images of each other. Mirror images flip every
             centre. Molecules like these, which flip only some, are called **diastereomers**.
-            CYP2D6's pocket is a 3D shape, and only quinidine fits it well. The game uses quinidine
-            as its blocker for that reason.
+            CYP2D6's pocket is a 3D shape, and only quinidine fits it well.
 
             This difference is easy for software to lose. A molecule's **InChIKey** is a standard ID
             whose first block encodes the atoms and bonds and whose second block encodes the 3D
@@ -567,8 +565,8 @@ def _(
 
             Some drugs don't just sit in the enzyme. The enzyme starts to process them, and the
             half-finished product latches onto it and wrecks it for good. The liver then has to
-            build new enzyme, and that takes days. This is **time-dependent inhibition**. It kept
-            the drain slow in the Broken level after ritonavir stopped.
+            build new enzyme, and that takes days. This is **time-dependent inhibition**. In the
+            optional level "Blind, and broken", the drain stays slow after ritonavir stops.
 
             OpenADMET tested it by measuring each compound twice, once straight away and once
             after it had spent time with the enzyme. A compound counts as time-dependent when its
@@ -599,11 +597,10 @@ def _(mo):
 
     A swallowed pill has to cross the gut wall and then pass through the liver before it
     reaches the rest of your blood, and both are lined with CYP3A4. That first bite is
-    **first-pass metabolism**. Felodipine is the blood-pressure pill in the gatekeeper levels,
+    **first-pass metabolism**. Felodipine is the blood-pressure pill in the second level,
     and its FDA label says only about 20% of each tablet reaches the blood. The bite also
-    varies from person to person and from day to day. In the game each pill lost a different
-    amount for that reason, while an injection skipped the gut and liver and delivered an
-    exact dose.
+    varies from person to person and from day to day, so each pill in the game loses a
+    different amount.
 
     First-pass metabolism depends on the gut and the liver working together, and no single
     well can reproduce that. OpenADMET's files have no measurement of it.
@@ -704,7 +701,7 @@ def _(POPULATION, alt, drugs, finish_chart, measured, mo, named_markers, pxr):
             A protein called PXR works as a switch inside liver cells. When a drug flips it, the
             cell makes more CYP3A4, so every medicine that CYP3A4 clears starts leaving faster.
             That is **enzyme induction**. The extra enzyme takes days to fade after the last dose,
-            and the Blind level's trap comes from that delay. OpenADMET measured how strongly
+            and the third and fourth levels both turn on that delay. OpenADMET measured how strongly
             {len(_scored):,} compounds flip the switch.
             """
         ),
@@ -774,8 +771,8 @@ def _(AMBER, BLUE, INK, MUTED, alt, mo, screen, tastes, unparsed):
             <a id="tastes"></a>
             ## What each enzyme grabs
 
-            Doctors **manage interactions** after the fact, by pausing or swapping a medicine the
-            way you did in the last level. Chemists manage them before a drug exists, by designing
+            Doctors **manage interactions** after the fact, by pausing or swapping a medicine.
+            Chemists manage them before a drug exists, by designing
             molecules the enzymes don't grab. That works because each CYP enzyme has a pocket with
             its own shape and charge, so each one tends to grab a different kind of molecule.
 
@@ -992,12 +989,14 @@ def _(RELIABLE_FLOOR, inhibition, mo):
 
         The game is right about which drug does what to which enzyme, but its speeds and doses are made up.
 
-        * **Measured.** Quinidine, paroxetine and isavuconazole block their enzymes in OpenADMET's
-          inhibition assay, ritonavir gets worse with time on CYP2D6, and rifampicin flips PXR.
+        * **Measured.** Isavuconazole and paroxetine block their enzymes in OpenADMET's inhibition
+          assay, rifampicin flips PXR, and ritonavir gets worse with time on CYP2D6.
         * **From FDA and the clinic.** The medicines being cleared (metoprolol, midazolam, felodipine
           and simvastatin) come from FDA's list of drugs those enzymes clear, and OpenADMET did not
           test them. Nirmatrelvir's fast clearance and ritonavir's damage to CYP3A4 come from
           clinical studies.
+        * **Compressed time.** In a real body, induction takes days to build up and days to fade.
+          The third level squeezes that into seconds so you can watch it happen.
         * **Invented.** The speeds, doses and green bands are tuned so each level plays well. Turning
           a lab potency into a real drug level takes the two numbers the interaction model above asks you
           for, and neither is in these files.
