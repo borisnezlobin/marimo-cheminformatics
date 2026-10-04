@@ -5,9 +5,9 @@
 #     "anywidget==0.11.0",
 #     "traitlets==5.16.1",
 #     "pandas==3.0.6",
-#     "numpy==1.26.4",
+#     "numpy==2.3.5",
 #     "altair==6.3.0",
-#     "rdkit==2023.9.6",
+#     "rdkit==2026.3.6",
 # ]
 # ///
 
@@ -32,10 +32,12 @@ def _():
     import numpy as np
     import pandas as pd
     import traitlets
-    from rdkit import Chem, DataStructs
+    from rdkit import Chem, DataStructs, RDLogger
     from rdkit.Chem import Descriptors, rdDepictor, rdFingerprintGenerator, rdMolDescriptors
     from rdkit.Chem.Draw import rdMolDraw2D
     from rdkit.Chem.MolStandardize import rdMolStandardize
+
+    RDLogger.DisableLog("rdApp.*")
 
     REPO_RAW = "https://raw.githubusercontent.com/borisnezlobin/marimo-cheminformatics/main/"
 
