@@ -146,7 +146,7 @@ const MARKUP = `
         <input id="clash-share" type="range" min="0" max="100" step="1" data-ref="share">
         <div class="ticks" data-ref="shareTicks"></div>
       </div>
-      <p class="slider-note">FDA calls a medicine moderately sensitive to an enzyme above 50% and sensitive above 80%. Neither number is in OpenADMET's files. The first depends on the dose and on how much of the drug floats free in blood. The second depends on which medicine it meets.</p>
+      <p class="slider-note">FDA calls a medicine moderately sensitive to an enzyme above 50%. Above 80%, FDA calls it sensitive. Neither slider's number is in OpenADMET's files! The first depends on the dose, plus how much of the drug floats free in your blood. The second depends on which medicine the blocker meets.</p>
     </div>
   </div>
 `;

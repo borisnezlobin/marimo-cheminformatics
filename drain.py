@@ -222,9 +222,9 @@ def _(ICONS, SPRITES, inhibition, mo):
     _counts = {enzyme: int(inhibition[enzyme].notna().sum()) for enzyme in ["CYP2D6", "CYP3A4"]}
     _key = [
         ('<span class="glyph glyph--level"></span>', "Medicine in your blood", "How much of the drug is circulating right now."),
-        ('<span class="glyph glyph--band"></span>', "Therapeutic window", "The band holds enough drug to work and too little to harm, and doctors aim every dose at it."),
+        ('<span class="glyph glyph--band"></span>', "Therapeutic window", "Inside this band there's enough drug to work but not enough to hurt you. Doctors aim every dose at it."),
         ('<span class="glyph glyph--toxic"></span>', "Toxic level", "Above this line the drug does harm. The game calls crossing it an overdose."),
-        (f'<img class="glyph" src="{SPRITES["cyp2d6"]}" alt="">', "Liver enzymes", "These CYP enzymes clear the drug. A blocked copy wears the blocking drug, and a destroyed copy fades away."),
+        (f'<img class="glyph" src="{SPRITES["cyp2d6"]}" alt="">', "Liver enzymes", "These CYP enzymes clear the drug. A blocked enzyme wears the blocking drug like a hat. A destroyed one fades away."),
         (f'<span class="glyph glyph--icon">{ICONS["pill"]}</span>', "A dose by mouth", "Each tap swallows a pill."),
         ('<span class="glyph glyph--gate"></span>', "Gut wall and liver", "In the second level, the band at the top takes a bite of each swallowed pill before it reaches your blood."),
         (f'<span class="glyph glyph--icon glyph--blood">{ICONS["drop"]}</span>', "A blood test", "In the fourth level a blood test is the only way to see the level, as it is in a clinic."),
@@ -242,20 +242,22 @@ def _(ICONS, SPRITES, inhibition, mo):
         mo.Html(f'<dl class="key">{_rows}</dl>'),
         mo.md(
             r"""
-            The row of molecules at the bottom is a family of liver enzymes called cytochrome
-            P450, written CYP. Each one grabs a drug molecule, attaches an oxygen atom to it,
-            and lets it go in a form the kidneys can flush out. The red patch in the middle of
-            each drawing is the heme. It's a ring that holds an iron atom, and the oxygen gets
-            attached at that iron. Many blocking drugs work by sitting on it.
+            The row of molecules at the bottom of the game is a family of liver enzymes called
+            cytochrome P450 (CYP for short, pronounced "sip"). Each enzyme grabs a drug molecule.
+            Then it sticks an oxygen atom onto it! That oxygen makes the drug easier to dissolve
+            in water, so your kidneys can flush it out.
 
-            A medicine's **half-life** is the time it takes for half of it to leave your blood.
-            The faster the enzymes clear a medicine, the shorter its half-life. Half-life also
-            depends on how widely the drug spreads through your body, and the game leaves that
-            part out. The first level makes you tap in a steady rhythm because its medicine has
-            a short half-life.
+            The red patch in the middle of each drawing is called the heme. It holds the iron atom
+            that does the oxygen-sticking. Many blocking drugs work by parking right on top of that
+            iron!
 
-            CYP3A4 alone breaks down about half of all medicines, so three of the four levels
-            run on it.
+            A medicine's **half-life** is how long it takes for half of it to leave your blood.
+            Faster enzymes mean a shorter half-life. (Half-life also depends on how far a drug
+            spreads through your body, but the game ignores that.) The first level keeps you
+            tapping because its medicine has a short half-life.
+
+            CYP3A4 alone breaks down about half of all medicines, so three of the four levels run
+            on it.
             """
         ),
         mo.Html(
@@ -270,8 +272,8 @@ def _(ICONS, SPRITES, inhibition, mo):
         ),
         mo.md(
             """
-            Both drawings come from real crystal structures (PDB 2F9Q and 1TQN). David Goodsell's
-            Illustrate program drew each one as a slice through the iron atom.
+            Both drawings are real enzymes. Scientists mapped every atom by shining X-rays through
+            crystals of each protein (PDB entries 2F9Q and 1TQN).
             """
         ),
     ])
@@ -315,15 +317,18 @@ def _(direct_potency, mo):
     <a id="inhibition"></a>
     ## Enzyme inhibition
 
-    OpenADMET put each compound in a well with one enzyme and a substance that enzyme
-    normally breaks down. Then it measured how much the compound slowed the enzyme at
-    12 different concentrations. The concentration that cuts the enzyme's speed in half
-    is called the **IC50**. Paroxetine, an antidepressant, half-blocks
-    CYP2D6 at {10 ** (6 - _paroxetine):.1f} micromolar.
+    How do you measure whether a drug blocks an enzyme? OpenADMET put each compound in a
+    tiny well with one enzyme plus a substance that enzyme normally breaks down. Then they
+    watched how much the compound slowed the enzyme down, at 12 different concentrations.
 
-    IC50s span a huge range, so labs report them on a log scale called **pIC50**. It works
-    like the pH scale, so each whole step up means ten times less drug does the same job.
-    Paroxetine's pIC50 is {_paroxetine:.2f}.
+    Those concentrations are measured in **micromolar** (µM). You don't need its exact
+    size here, because all that matters is that smaller numbers mean less drug. The
+    concentration that cuts the enzyme's speed in half is called the **IC50**. For example,
+    paroxetine (an antidepressant) half-blocks CYP2D6 at {10 ** (6 - _paroxetine):.1f} micromolar.
+
+    IC50s run from tiny to huge, so labs usually put them on a log scale called **pIC50**.
+    It works like the pH scale: every step up means you need ten times less drug to do the
+    same job. Paroxetine's pIC50 is {_paroxetine:.2f}. A higher pIC50 means a stronger blocker!
 
     | pIC50 | Concentration that half-blocks the enzyme |
     |---|---|
@@ -332,9 +337,9 @@ def _(direct_potency, mo):
     | 6 | 1 micromolar |
     | 7 | 0.1 micromolar |
 
-    When a second medicine sits in the enzyme like this, the first one stops leaving
-    and builds up. That is a **drug interaction**, and **enzyme inhibition** is the
-    mechanism behind most of them.
+    When a blocker sits in an enzyme like this, any other medicine that needs that enzyme
+    leaves your body more slowly. So the other medicine builds up! That's a **drug
+    interaction**. Most drug interactions happen through this kind of **enzyme inhibition**.
     """)
     return
 
@@ -384,9 +389,10 @@ def _(
         mo.md(
             f"""
             Of the {len(_values):,} compounds measured against {_enzyme}, {_strong:.0%} block it at
-            1 micromolar or less (pIC50 6 and up). OpenADMET says its assay can't measure anything
-            below 4 reliably, so the {_weak:.0%} of compounds that score lower share the pale bar on
-            the left. All anyone knows about them is that they need more than 100 micromolar.
+            1 micromolar or less (a pIC50 of 6 or more). OpenADMET says its test can't reliably
+            measure anything below 4. So the {_weak:.0%} of compounds that score lower all share the
+            pale bar on the left. All anyone knows about them is that they need more than 100
+            micromolar to half-block the enzyme.
             """
         ),
     ])
@@ -456,15 +462,22 @@ def _(
         <a id="stereo"></a>
         ## Quinine and quinidine
 
-        Quinine, the bitter taste in tonic water, and quinidine, a heart-rhythm drug, are built
-        from the same atoms joined in the same order. A **stereocentre** is a carbon atom that can
-        hold its four groups in either of two 3D arrangements. Each drug has {_centres} of them, and
-        the two drugs differ at {_differences}. Make a guess before you see the measurement.
+        Quinine (the bitter taste in tonic water) and quinidine (a heart-rhythm drug) are made
+        of exactly the same atoms, bonded in exactly the same order. So how can they be two
+        different drugs? The answer is their 3D shape.
+
+        Some carbon atoms hold their four neighbours in a way that comes in a left-handed and a
+        right-handed version, like a pair of gloves. Chemists call these carbons
+        **stereocentres**. Each of these drugs has {_centres} of them. Quinine and quinidine
+        match at {_centres - _differences} of those carbons but point the opposite way at the
+        other {_differences}.
+
+        Before you scroll on, take a guess!
         """
     )
 
     _reveal = mo.vstack([
-        mo.md(f"You guessed {stereo_guess.value.lower() if stereo_guess.value else ''}. The measured gap is **{_fold:,.0f} times**."),
+        mo.md(f"You guessed {stereo_guess.value.lower() if stereo_guess.value else ''}. The real gap is **{_fold:,.0f} times**!"),
         mo.Html(
             f"""
             <div class="pair">
@@ -475,24 +488,31 @@ def _(
         ),
         mo.md(
             f"""
-            The highlighted atoms are the two flipped centres. The other two point the same way in
-            both, so the molecules are not mirror images of each other. Mirror images flip every
-            centre. Molecules like these, which flip only some, are called **diastereomers**.
-            CYP2D6's pocket is a 3D shape, and only quinidine fits it well.
+            The orange highlights mark the {_differences} carbons that flipped. The other
+            {_centres - _differences} point the same way in both drugs. That means these two molecules
+            are not mirror images of each other, because a mirror image would flip every
+            stereocentre. Chemists call a pair like this **diastereomers**. CYP2D6's pocket has a
+            3D shape of its own. Quinidine just fits it much better than quinine does.
 
-            This difference is easy for software to lose. A molecule's **InChIKey** is a standard ID
-            whose first block encodes the atoms and bonds and whose second block encodes the 3D
-            arrangement. The two drugs share the first block:
+            Software loses this difference all the time! Chemistry databases give every molecule a
+            standard ID called an **InChIKey**. It comes in two blocks. The first block describes
+            which atoms are bonded to which. The second block describes the 3D arrangement. Here
+            are both drugs:
 
             {key_markup("quinine")} quinine<br>
             {key_markup("quinidine")} quinidine
 
-            Many prediction models describe a molecule with a Morgan fingerprint, a list of the
-            small atom neighbourhoods it contains. RDKit's default fingerprint ignores 3D arrangement,
-            so it scores these two drugs as identical, with a similarity of {similarity(False):.2f} on a
-            scale from 0 to 1. Switching chirality on drops the score to {similarity(True):.2f}. A model
-            fed the default fingerprint has to predict the same potency for both, so it will be off
-            by a factor of {_fold:,.0f} for at least one of them.
+            The first blocks match exactly.
+
+            Lots of prediction models describe a molecule with a **Morgan fingerprint**. It's
+            basically a checklist of the small groups of atoms a molecule contains. RDKit (the
+            chemistry library this notebook uses) leaves 3D shape out of its fingerprints by
+            default. So it scores these two drugs as identical, with a similarity of
+            {similarity(False):.2f} on a scale from 0 to 1! If you switch 3D shape on, the score drops
+            to {similarity(True):.2f}.
+
+            A model that reads the default fingerprint has to predict the same potency for both
+            drugs. It will be off by a factor of {_fold:,.0f} for at least one of them.
             """
         ),
     ])
@@ -555,7 +575,7 @@ def _(
     _ritonavir_note = (
         f"Ritonavir's IC50 shrank about {10 ** float(_highlight.after.iloc[0] - _highlight.direct.iloc[0]):.0f}-fold after the wait."
         if len(_highlight)
-        else "OpenADMET did not run this test on ritonavir for CYP3A4, so it has no point here."
+        else "OpenADMET didn't run this test on ritonavir for CYP3A4, so it has no point here."
     )
     mo.vstack([
         mo.md(
@@ -563,15 +583,19 @@ def _(
             <a id="tdi"></a>
             ## Time-dependent inhibition
 
-            Some drugs don't just sit in the enzyme. The enzyme starts to process them, and the
-            half-finished product latches onto it and wrecks it for good. The liver then has to
-            build new enzyme, and that takes days. This is **time-dependent inhibition**. In the
-            optional level "Blind, and broken", the drain stays slow after ritonavir stops.
+            Some drugs don't just sit in the enzyme. The enzyme tries to process them like any
+            other drug, by sticking an oxygen atom onto them. For a few drugs, that half-processed
+            molecule turns out to be reactive. It glues itself to the enzyme and breaks it for good!
+            Your liver then has to build brand-new enzyme from scratch. That takes days.
 
-            OpenADMET tested it by measuring each compound twice, once straight away and once
-            after it had spent time with the enzyme. A compound counts as time-dependent when its
-            IC50 shrinks more than 2-fold after the wait, which puts it above the dashed line.
-            The shaded strips mark values below pIC50 4, where the assay stops being reliable.
+            This is called **time-dependent inhibition**. You can watch it in the optional level
+            "Blind, and broken": the drain stays slow even after ritonavir is gone.
+
+            OpenADMET tested for it by measuring each compound twice. The first measurement
+            happened right away. The second came after the compound had spent some time alone with
+            the enzyme. If the IC50 shrank by more than 2 times after the wait, the compound counts
+            as time-dependent. Those compounds land above the dashed line. The shaded strips mark
+            values below pIC50 4, where the test stops being reliable.
             """
         ),
         tdi_picker,
@@ -580,9 +604,9 @@ def _(
             f"""
             OpenADMET flagged {_share:.0%} of the {len(_rows):,} compounds tested on {_enzyme} as
             getting worse with time. {_ritonavir_note} The game shows ritonavir doing this to
-            CYP2D6 because that is what this data measured. Ritonavir is better known for doing it
-            to CYP3A4, and Paxlovid depends on that effect. That result comes from clinical studies
-            rather than from this data.
+            CYP2D6 because that's what this data measured. Ritonavir is more famous for doing it to
+            CYP3A4 (Paxlovid depends on it!), but that result comes from clinical studies, not from
+            these files.
             """
         ),
     ])
@@ -595,15 +619,15 @@ def _(mo):
     <a id="first-pass"></a>
     ## First-pass metabolism
 
-    A swallowed pill has to cross the gut wall and then pass through the liver before it
-    reaches the rest of your blood, and both are lined with CYP3A4. That first bite is
-    **first-pass metabolism**. Felodipine is the blood-pressure pill in the second level,
-    and its FDA label says only about 20% of each tablet reaches the blood. The bite also
-    varies from person to person and from day to day, so each pill in the game loses a
-    different amount.
+    A swallowed pill has to get through your gut wall and then your liver before it reaches
+    the rest of your blood. Both are packed with CYP3A4, so both take a bite. That bite is
+    called **first-pass metabolism**. Take felodipine, the blood-pressure pill in the second
+    level. According to its FDA label, only about 20% of each tablet makes it into your
+    blood! The size of the bite also changes from person to person and from day to day.
+    That's why each pill in the game loses a different amount.
 
-    First-pass metabolism depends on the gut and the liver working together, and no single
-    well can reproduce that. OpenADMET's files have no measurement of it.
+    No single lab well can measure first-pass metabolism, because it takes a whole gut and
+    liver working together. So OpenADMET's files have nothing on it.
     """)
     return
 
@@ -647,22 +671,23 @@ def _(
             <a id="boosting"></a>
             ## Boosting
 
-            Paxlovid's COVID drug, nirmatrelvir, is cleared so fast that it can't reach a useful
-            level on its own. Every dose therefore comes with ritonavir, which blocks CYP3A4 and
-            slows that clearance. Blocking one drug's clearance with another on purpose is called
-            **boosting**.
+            Sometimes doctors block an enzyme on purpose! Paxlovid's COVID drug, nirmatrelvir, gets
+            cleared so fast that it can't reach a useful level on its own. So every Paxlovid pack
+            also includes ritonavir, whose whole job is to block CYP3A4. Using one drug to slow down
+            another drug's clearance (how fast your body removes it) is called **boosting**.
 
-            OpenADMET's cheapest test shows how hard ritonavir hits CYP3A4. Octant, the lab that
-            ran it, tested each compound once at a single high concentration and recorded how much
-            enzyme activity was left. Octant gives that concentration as typically 30 micromolar.
+            OpenADMET's cheapest test shows how hard ritonavir hits CYP3A4. Octant, the lab that ran
+            it, tested each compound once at a single high concentration. Octant says that
+            concentration was typically 30 micromolar. Then the lab measured how much enzyme
+            activity was left.
             """
         ),
         _chart,
         mo.md(
             f"""
-            Ritonavir left {_ritonavir:.0f}% of CYP3A4's activity. Only {_stronger:.0%} of the
-            {len(_cyp3a4):,} screened compounds left less. Felodipine left even less, because CYP3A4
-            also breaks felodipine down and the two compete for the enzyme.
+            Ritonavir left only {_ritonavir:.0f}% of CYP3A4's activity. Just {_stronger:.0%} of the
+            {len(_cyp3a4):,} screened compounds left less. Felodipine left even less! CYP3A4 also
+            breaks felodipine down, so the two molecules compete for the same enzyme.
             """
         ),
     ])
@@ -698,23 +723,28 @@ def _(POPULATION, alt, drugs, finish_chart, measured, mo, named_markers, pxr):
             <a id="induction"></a>
             ## Enzyme induction
 
-            A protein called PXR works as a switch inside liver cells. When a drug flips it, the
-            cell makes more CYP3A4, so every medicine that CYP3A4 clears starts leaving faster.
-            That is **enzyme induction**. The extra enzyme takes days to fade after the last dose,
-            and the third and fourth levels both turn on that delay. OpenADMET measured how strongly
-            {len(_scored):,} compounds flip the switch.
+            A protein called **PXR** works like a switch inside your liver cells. When a drug flips
+            it, the cell starts making more CYP3A4. More enzyme means every medicine that CYP3A4
+            clears now leaves faster. That's **enzyme induction**. The extra enzyme sticks around
+            for days after the last dose. The third and fourth levels both play with that delay.
+
+            OpenADMET measured how strongly {len(_scored):,} compounds flip the switch. They report it
+            as a **pEC50**, which works just like pIC50: a higher number means less drug is needed
+            to flip the switch.
             """
         ),
         _chart,
         mo.md(
             f"""
-            Rifampicin, a tuberculosis antibiotic and the textbook example of an inducer, was
-            measured twice, at {_rif_low:.2f} and {_rif_high:.2f}, and the chart marks the average.
-            Only {_beat_high} of the {len(_scored):,} compounds beat its higher result, and
-            {_beat_low} beat its lower one. Two runs of the same compound can differ by this much,
-            so small gaps between compounds on this chart mean little. Ritonavir scores {_ritonavir:.2f},
-            higher than {float((_scored.pEC50 < _ritonavir).mean()):.0%} of them. It blocks CYP3A4 and
-            tells the liver to make more CYP3A4 at the same time.
+            Rifampicin (a tuberculosis antibiotic) is the textbook example of an inducer. OpenADMET
+            measured it twice, getting {_rif_low:.2f} one time and {_rif_high:.2f} the other, so the
+            chart marks the average. Only {_beat_high} of the {len(_scored):,} compounds beat its
+            higher result. {_beat_low} beat its lower one! Two runs of the same compound can differ
+            that much, so don't read too much into small gaps on this chart.
+
+            Ritonavir scores {_ritonavir:.2f}, higher than {float((_scored.pEC50 < _ritonavir).mean()):.0%} of
+            them. So ritonavir blocks CYP3A4 while also telling the liver to make more of it. Talk
+            about mixed signals!
             """
         ),
     ])
@@ -771,30 +801,37 @@ def _(AMBER, BLUE, INK, MUTED, alt, mo, screen, tastes, unparsed):
             <a id="tastes"></a>
             ## What each enzyme grabs
 
-            Doctors **manage interactions** after the fact, by pausing or swapping a medicine.
-            Chemists manage them before a drug exists, by designing
-            molecules the enzymes don't grab. That works because each CYP enzyme has a pocket with
-            its own shape and charge, so each one tends to grab a different kind of molecule.
+            Doctors **manage interactions** after they show up, by pausing or swapping a medicine.
+            Chemists try to prevent them before a drug even exists, by designing molecules the
+            enzymes won't grab. That works because each CYP enzyme's pocket has its own shape and
+            electric charge. So each enzyme prefers different kinds of molecules.
 
-            The chart counts a compound as a blocker when it removed at least half of an enzyme's
-            activity in OpenADMET's screen. The lab also had to rate the result significant, which
-            means a false discovery rate under 5%. Each feature is found with an RDKit substructure
-            search you can read in the code.
+            OpenADMET's screen tested every compound once against each enzyme. The chart counts a
+            compound as a blocker if it removed at least half of the enzyme's activity. The lab
+            also had to be confident the result wasn't a fluke (a false discovery rate under 5%).
+            You can read the RDKit search behind each feature in the code.
             """
         ),
         _chart,
         mo.md(
             f"""
-            A basic amine is a nitrogen atom that carries a positive charge in the body. Basic amines
-            raise the share of CYP2D6 blockers from {_rate('Basic amine', 'CYP2D6', 'Without it'):.0%} to
-            {_rate('Basic amine', 'CYP2D6', 'With the feature'):.0%}, because CYP2D6's pocket holds a
-            negatively charged amino acid that pairs with them. CYP1A2 has a narrow, flat pocket, and
-            flat slabs of aromatic rings block it more often.
+            A **basic amine** is a nitrogen atom that picks up a positive charge inside your body.
+            Basic amines raise the share of CYP2D6 blockers from {_rate('Basic amine', 'CYP2D6', 'Without it'):.0%} to
+            {_rate('Basic amine', 'CYP2D6', 'With the feature'):.0%}! CYP2D6's pocket holds a negatively
+            charged amino acid. Opposite charges attract, so amines stick. CYP1A2 has a narrow,
+            flat pocket instead. Flat slabs of aromatic rings (rings of carbon like the one in
+            benzene) block it more often.
 
-            Carboxylic acids cut blocking for all four enzymes, including CYP2C9. That enzyme is usually
-            described as preferring acids, but that description comes from the drugs it breaks down, not
-            the ones that block it. RDKit parsed {len(screen) - unparsed:,} of the {len(screen):,} screen
-            structures.
+            Big molecules (over 400 daltons, the unit chemists use for molecular weight) block
+            CYP3A4 {_rate('Large (over 400 Da)', 'CYP3A4', 'With the feature'):.0%} of the time, against
+            {_rate('Large (over 400 Da)', 'CYP3A4', 'Without it'):.0%} for smaller ones. CYP3A4 has the
+            roomiest pocket of the four, so it can fit bigger molecules.
+
+            Carboxylic acids (the acidic group in vinegar) cut blocking for all four enzymes, even
+            CYP2C9. That's surprising, because textbooks describe CYP2C9 as preferring acids! The
+            textbooks are describing the drugs CYP2C9 breaks down, though, not the drugs that block
+            it. (RDKit read {len(screen) - unparsed:,} of the {len(screen):,} screen structures without
+            errors.)
             """
         ),
         mo.accordion({"Table view": mo.ui.table(tastes.assign(hit_rate=tastes.hit_rate.round(3)), selection=None)}),
@@ -816,19 +853,26 @@ def _(mo):
     <a id="clash"></a>
     ## Predicting an interaction
 
-    This section answers the question from the top of the notebook. A pIC50 tells you how much of a drug it takes to
-    half-block an enzyme in a well. To get from there to a person you need two more numbers:
-    how much of the blocker actually reaches the enzyme, and how much the other medicine
-    depends on that enzyme to leave your body. FDA's simplest model combines the three:
+    Time to answer the question from the top! A pIC50 tells you how much of a drug it takes
+    to half-block an enzyme in a well. To get from there to a real person, you need two
+    more numbers. The first is how much of the blocker actually reaches the enzyme inside
+    your body. The second is how much the other medicine depends on that enzyme to leave.
+    FDA's simplest model combines all three:
 
     $$
     \text{exposure increase} = \frac{1}{\dfrac{f}{1 + I/\text{IC50}} + (1 - f)}
     $$
 
-    Here $I$ is the concentration of the blocker at the enzyme and $f$ is the share of the
-    other medicine's clearance that runs through that enzyme. FDA's version uses a slightly
-    different potency constant, and treating the IC50 as that constant is a common first
-    approximation. Pick a compound, then set the two numbers the lab can't give you.
+    Here $I$ is the blocker's concentration at the enzyme. $f$ is the share of the other
+    medicine's clearance (how fast your body removes it) that runs through that enzyme.
+    "Exposure" means how much of the other medicine your body sees over time. So an
+    exposure increase of 2 works like doubling its dose. (FDA's real formula uses a
+    slightly different potency number. Plugging in the IC50 instead is a common first
+    guess.)
+
+    Pick a compound below, then set the two numbers the lab can't give you. If you'd rather
+    paste a molecule, use a **SMILES string**, which writes a molecule as one line of text.
+    For example, CCO is ethanol.
     """)
     return
 
@@ -952,11 +996,12 @@ def _(clash, drug_picker, lookup, lookup_svg, mo, smiles_box):
         clash,
         mo.md(
             r"""
-            Slide the second number to 80% and drag the blocker as high as it goes. The exposure
-            increase levels off just under 5 times, because a medicine with a fifth of its clearance elsewhere
-            still leaves through that other route. No blocker can push exposure past $1/(1-f)$.
-            FDA draws its "sensitive" line at the same spot. It calls a medicine sensitive when a
-            strong blocker raises its exposure five times or more, and that requires $f$ of at least 80%.
+            Try this: set the second slider to 80%, then drag the blocker as high as it goes. The
+            exposure increase stops just under 5 times! The other medicine still sends a fifth of
+            its clearance through other routes, so it can always leave that way. In general, no
+            blocker can push exposure past $1/(1-f)$. FDA draws its "sensitive" line in the same
+            place. It calls a medicine sensitive when a strong blocker raises its exposure 5 times
+            or more. That only happens when $f$ is at least 80%.
             """
         ),
         mo.accordion({
@@ -970,8 +1015,8 @@ def _(clash, drug_picker, lookup, lookup_svg, mo, smiles_box):
                 screen = pd.read_csv(base + "cyp-challenge-single-concentration-TRAIN.csv")
                 ```
 
-                Each row of `inhibition` is one compound, with a SMILES string and a pIC50
-                column per enzyme. Values below 4 are outside the reliable range.
+                Each row of `inhibition` is one compound. It has a SMILES string plus one
+                pIC50 column per enzyme. Values below 4 are outside the reliable range.
                 """
             )
         }),
@@ -987,23 +1032,25 @@ def _(RELIABLE_FLOOR, inhibition, mo):
         <a id="limits"></a>
         ## What the game makes up
 
-        The game is right about which drug does what to which enzyme, but its speeds and doses are made up.
+        The game gets right which drug does what to which enzyme. Its speeds and doses are made
+        up, though!
 
-        * **Measured.** Isavuconazole and paroxetine block their enzymes in OpenADMET's inhibition
-          assay, rifampicin flips PXR, and ritonavir gets worse with time on CYP2D6.
-        * **From FDA and the clinic.** The medicines being cleared (metoprolol, midazolam, felodipine
-          and simvastatin) come from FDA's list of drugs those enzymes clear, and OpenADMET did not
-          test them. Nirmatrelvir's fast clearance and ritonavir's damage to CYP3A4 come from
-          clinical studies.
-        * **Compressed time.** In a real body, induction takes days to build up and days to fade.
-          The third level squeezes that into seconds so you can watch it happen.
-        * **Invented.** The speeds, doses and green bands are tuned so each level plays well. Turning
-          a lab potency into a real drug level takes the two numbers the interaction model above asks you
-          for, and neither is in these files.
-        * **Lab conditions.** The screen used one high concentration, far above the blood level of
-          most medicines, so it flags more blockers than a patient would ever feel.
-        * **Censored values.** {_below:.0%} of the CYP3A4 pIC50 values are below 4, outside the range
-          the assay measures reliably. They mean "weaker than 100 micromolar" rather than an exact potency.
+        * **Measured.** Isavuconazole and paroxetine block their enzymes in OpenADMET's tests.
+          Rifampicin flips the PXR switch. Ritonavir gets worse with time on CYP2D6.
+        * **From FDA and the clinic.** The medicines being cleared (metoprolol, midazolam,
+          felodipine and simvastatin) come from FDA's list of drugs those enzymes clear.
+          OpenADMET didn't test them. Nirmatrelvir's fast clearance comes from clinical
+          studies, as does ritonavir's damage to CYP3A4.
+        * **Compressed time.** In a real body, induction takes days to build up and days to
+          fade. The third level squeezes that into seconds so you can watch it happen.
+        * **Invented.** The speeds, doses and green bands are tuned so each level plays well.
+          Turning a lab potency into a real drug level would take the two numbers from the
+          interaction model above. Neither one is in these files.
+        * **Lab conditions.** The screen used one high concentration, way above the blood level
+          of most medicines. So it flags more blockers than a patient would ever notice.
+        * **Censored values.** {_below:.0%} of the CYP3A4 pIC50 values are below 4, outside the
+          range the test measures reliably. Read those as "weaker than 100 micromolar," not as
+          exact potencies.
         """
     )
     return
@@ -1014,27 +1061,25 @@ def _(mo):
     mo.md(r"""
     ## How this notebook was made
 
-    **AI use.** This notebook was built with heavy help from Claude, Anthropic's
-    model, running in Claude Code. Claude wrote most of the code, the game and the
-    text, and ran the simulations used to balance each level, working from the
-    author's direction and play-testing.
+    **AI use.** I built this notebook with heavy help from Claude (Anthropic's AI model) in
+    Claude Code. Claude wrote most of the code, the game and the text. It also ran the
+    simulations I used to balance each level, working from my direction and playtesting.
 
-    **Data.** OpenADMET's CYP inhibition challenge release (Apache-2.0) and PXR
-    challenge release (CC BY 4.0) on Hugging Face. The trimmed tables in `data/drain/`
-    are rebuilt from those files by `build/build_drain_data.py`. The reliable range
+    **Data.** The data comes from OpenADMET's CYP inhibition challenge release (Apache-2.0)
+    and PXR challenge release (CC BY 4.0) on Hugging Face. `build/build_drain_data.py`
+    rebuilds the trimmed tables in `data/drain/` from those files. The reliable range
     (pIC50 4 and up) and the 2-fold rule for time-dependent inhibition come from
     OpenADMET's CYP challenge tutorial. The screen concentration comes from Octant's
-    write-up of the assay. The list of drugs each enzyme clears is FDA's table of
-    substrates, inhibitors and inducers, and felodipine's bioavailability is from its
-    FDA label.
+    write-up of the test. The list of drugs each enzyme clears is FDA's table of
+    substrates, inhibitors and inducers. Felodipine's 20% figure is from its FDA label.
 
-    **Drawings.** Enzymes from PDB entries 2F9Q (CYP2D6) and 1TQN (CYP3A4), and drug
-    shapes from RDKit, rendered with Illustrate by David S. Goodsell (Apache-2.0). The
-    CYP3A4 fact is from PDB-101's Molecule of the Month on cytochrome P450. Icons are
-    Phosphor (MIT).
+    **Drawings.** The enzyme drawings use PDB entries 2F9Q (CYP2D6) and 1TQN (CYP3A4). The
+    drug shapes come from RDKit. David S. Goodsell's Illustrate program rendered all of them
+    (Apache-2.0). The fact that CYP3A4 handles about half of all medicines is from PDB-101's
+    Molecule of the Month on cytochrome P450. Icons are Phosphor (MIT).
 
-    **Keyboard.** Click the game first. Space doses the first beaker, 1 to 3 dose or
-    pause the others, and R, I or B uses the tokens in the corner.
+    **Keyboard.** Click the game first. Space doses the first beaker. Keys 1 to 3 dose or
+    pause the other beakers. R, I or B uses the token in the corner.
     """)
     return
 

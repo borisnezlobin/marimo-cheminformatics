@@ -508,7 +508,7 @@ const OVERDOSE_SIGNS = {
   felodipine: "Too much felodipine drops blood pressure too far and brings on flushing, headache and a pounding heart.",
   nirmatrelvir: "Nirmatrelvir has no well-known overdose picture. Its common side effects are a bitter, metallic taste and diarrhea.",
   midazolam: "Too much midazolam sedates deeply and can slow breathing.",
-  simvastatin: "Too much simvastatin breaks down muscle, and the debris from that muscle can harm the kidneys.",
+  simvastatin: "Too much simvastatin breaks down muscle. The debris from that muscle can harm your kidneys.",
   isavuconazole: "Too much isavuconazole strains the liver and brings on nausea.",
 };
 
@@ -534,7 +534,7 @@ const LEVELS = [
       { when: "time:4", anchor: "tank", text: "Each bite is a different size" },
     ],
     hint: "The bite varies, so some pills land much harder than others. Leave room below the top of the band before each pill.",
-    learned: "first-pass metabolism", reveal: "Swallowed pills pass through the gut wall and the liver before they reach your blood, and both take part of each dose.",
+    learned: "first-pass metabolism", reveal: "Swallowed pills pass through the gut wall and the liver before they reach your blood. Both take a bite out of each dose.",
   },
   {
     world: 2, title: "Slower, then faster", duration: 36, turnover: 0.09,
@@ -548,10 +548,10 @@ const LEVELS = [
     },
     tips: [
       { when: "start", anchor: "liver", text: "Other medicines will change how fast these enzymes work" },
-      { when: "time:6", anchor: "liver", text: "Jammed enzymes clear slowly, and extra enzymes clear fast" },
+      { when: "time:6", anchor: "liver", text: "Jammed enzymes clear slowly. Extra enzymes clear fast" },
     ],
-    hint: "A blocker slows the drain, so dose less while it is in. An inducer adds enzyme that speeds the drain, and the extra enzyme lingers after it leaves.",
-    learned: "drug interactions", reveal: "One medicine can block the enzymes so another builds up, and another can make the liver build extra enzyme that washes it out faster.",
+    hint: "A blocker slows the drain, so dose less while it's around. An inducer adds enzyme that speeds the drain up. That extra enzyme sticks around after the inducer leaves!",
+    learned: "drug interactions", reveal: "One medicine can block the enzymes, so another medicine builds up. A different one can make the liver build extra enzyme, which washes medicine out faster.",
   },
   {
     world: 3, title: "Blind", duration: 38, bloodTests: 3, blind: true, turnover: 0.09,
@@ -562,15 +562,15 @@ const LEVELS = [
       { when: "time:2.5", anchor: "tokens", text: "A blood test shows the level for 2 seconds" },
       { when: "event", anchor: "liver", text: "Watch the enzymes for clues" },
     ],
-    hint: "Once the antibiotic stops, the extra enzyme fades and the drain slows back down. Ease off after it leaves.",
-    learned: "drug monitoring", reveal: "Doctors can't see a drug level either. A blood test shows it for a moment, and they adjust the dose from that reading.",
+    hint: "Once the antibiotic stops, the extra enzyme fades away. The drain slows back down, so ease off after the antibiotic leaves.",
+    learned: "drug monitoring", reveal: "Doctors can't see your drug level either! A blood test shows it for a moment. They adjust the dose from that reading.",
   },
   {
     world: 4, title: "The slow one", duration: 22,
     tanks: [{ medicine: "metoprolol", label: "Blood pressure", drain: 0.12, dose: 0.3, band: STANDARD_BAND, key: "Space" }],
     tips: [{ when: "start", anchor: "liver", text: "These enzymes clear this medicine slowly" }],
     hint: "This medicine clears slowly, so each pill stays longer. Space your doses further apart than in the first level.",
-    learned: "half-life", reveal: "A medicine that clears slowly lasts longer, so it needs fewer doses, and an extra pill takes longer to wash out.",
+    learned: "half-life", reveal: "A medicine that clears slowly lasts longer, so it needs fewer doses. An extra pill also takes longer to wash out.",
   },
   {
     world: 4, title: "Two prescriptions", duration: 36,
@@ -599,7 +599,7 @@ const LEVELS = [
     injections: { count: 3, amount: 0.22 },
     events: [{ drug: "isavuconazole", label: "An antifungal", kind: "sits", block: 0.6, start: [6, 10], length: [9, 12] }],
     tips: [],
-    hint: "While the antifungal blocks the enzymes, more of each pill gets through and it clears more slowly. Cut back as soon as it arrives.",
+    hint: "While the antifungal blocks the enzymes, more of each pill gets through. Each dose also clears more slowly, so cut back as soon as the antifungal arrives.",
     learned: "enzyme inhibition", reveal: "A blocked liver lets more of each pill through and clears it more slowly, so every dose hits twice.",
   },
   {
