@@ -9,10 +9,10 @@ function mountDrain(root, host = {}) {
     grain: "rgba(26, 33, 36, 0.05)",
     ink: "#1A2124",
     inkSoft: "#5B686E",
-    water: "#D4E6F1",
-    waterLine: "#4F8DB8",
+    water: "#BCDDF3",
+    waterLine: "#2F7EC0",
     frost: "#DDE3E6",
-    band: "#3E9B6A",
+    band: "#2E9E62",
     danger: "#FF6A1F",
     tissue: "#E0E8E5",
     capsule: "#7FB6DA",
@@ -310,11 +310,12 @@ function mountDrain(root, host = {}) {
     refreshHits();
     const survived = state.outcome === "done";
     const percent = Physics.score(state, level);
-    const stars = survived ? starCount(percent) : 0;
+    const passed = survived && percent >= (level.required ?? 0);
+    const stars = passed ? starCount(percent) : 0;
     best[levelIndex] = Math.max(best[levelIndex] ?? 0, stars);
     saveBest();
-    host.onFinish?.({ level: levelIndex, stars: best[levelIndex], learned: survived ? level.learned : null });
-    showResult(survived, percent, stars);
+    host.onFinish?.({ level: levelIndex, stars: best[levelIndex], learned: passed ? level.learned : null });
+    showResult({ survived, passed, percent, stars });
     if (!survived) {
       view.shake = calmMotion ? 0 : 14;
       view.flash = 1;
@@ -332,17 +333,29 @@ function mountDrain(root, host = {}) {
     return [0, 1, 2].map((i) => `<span class="${i < count ? "star on" : "star"}">${ICONS[i < count ? "star-fill" : "star"]}</span>`).join("");
   }
 
-  function showResult(survived, percent, stars) {
+  function resultTitle({ survived, passed, stars }) {
     const titles = ["You made it, barely", "Good", "Steady hands", "Perfect rhythm"];
+    if (passed) return titles[stars];
+    return survived ? "Not quite" : "Overdose";
+  }
+
+  function resultText({ survived, passed }, rounded) {
+    if (passed) return `You just learned about <strong>${level.learned}</strong>. ${level.reveal}`;
+    if (!survived) return overdoseExplanation();
+    return `This level needs ${Math.round(level.required * 100)}% in the green. You got ${rounded}%. <span class="reveal-hint">${level.hint ?? level.reveal}</span>`;
+  }
+
+  function showResult(outcome) {
+    const { survived, percent, stars } = outcome;
     const rounded = Math.round(percent * 100);
-    ui.resultTitle.textContent = survived ? titles[stars] : "Overdose";
+    ui.resultTitle.textContent = resultTitle(outcome);
     ui.resultStars.innerHTML = starsMarkup(stars);
     ui.resultStars.setAttribute("aria-label", `${stars} of 3 stars`);
     ui.resultMeter.hidden = !survived;
     ui.resultMeter.setAttribute("aria-label", `In the green ${rounded}% of the time`);
     ui.resultFill.style.width = `${rounded}%`;
     ui.resultValue.textContent = `${rounded}%`;
-    ui.resultReveal.innerHTML = survived ? `You just learned about <strong>${level.learned}</strong>. ${level.reveal}` : overdoseExplanation();
+    ui.resultReveal.innerHTML = resultText(outcome, rounded);
     const isLast = levelIndex === LEVELS.length - 1;
     ui.next.querySelector(".label").textContent = isLast ? "Back to level 1" : "Next level";
     hideTip();
@@ -394,6 +407,7 @@ function mountDrain(root, host = {}) {
     const tank = g.tanks[Number(index ?? 0)];
     const anchors = {
       tank: () => ({ x: tankCenter(tank), y: tank.top + 44, below: true }),
+      band: () => ({ x: tankCenter(tank), y: levelToY(level.tanks[Number(index ?? 0)].band[1], tank) - 2, below: false }),
       liver: () => ({ x: 200, y: g.liverTop - 4, below: false }),
       gate: () => ({ x: 200, y: g.gateTop - 2, below: false }),
       tokens: () => {
@@ -643,7 +657,7 @@ function mountDrain(root, host = {}) {
     const top = levelToY(spec.band[1], tank);
     const bottom = levelToY(spec.band[0], tank);
     context.save();
-    context.globalAlpha = 0.14;
+    context.globalAlpha = 0.2;
     context.fillStyle = PAPER.band;
     context.fillRect(tank.left, top, tank.right - tank.left, bottom - top);
     context.globalAlpha = 1;
@@ -770,9 +784,9 @@ function mountDrain(root, host = {}) {
     const pulse = calmMotion ? 1 : 0.65 + 0.35 * Math.sin(view.clock * 11);
     context.save();
     context.strokeStyle = PAPER.danger;
-    context.lineWidth = 2.5;
+    context.lineWidth = 3;
     context.shadowColor = PAPER.danger;
-    context.shadowBlur = 4 + 26 * closeness * pulse;
+    context.shadowBlur = 8 + 26 * closeness * pulse;
     context.beginPath();
     context.moveTo(tank.left, y);
     context.lineTo(tank.right, y);
@@ -783,7 +797,7 @@ function mountDrain(root, host = {}) {
   function drawBeaker(tank) {
     context.save();
     context.strokeStyle = PAPER.ink;
-    context.lineWidth = 3;
+    context.lineWidth = 3.5;
     context.lineJoin = "round";
     context.beginPath();
     context.moveTo(tank.left - 8, tank.top);

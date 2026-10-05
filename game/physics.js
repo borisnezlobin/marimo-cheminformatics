@@ -130,7 +130,7 @@ const Physics = (() => {
   }
 
   function throughGate(state, spec, variance = 1) {
-    return Math.max(0.05, 1 - (spec.gate ?? 0) * variance * capacity(state));
+    return Math.max(0.02, 1 - (spec.gate ?? 0) * variance * capacity(state));
   }
 
   function landingTime(spec) {
@@ -225,7 +225,7 @@ const LEVELS = [
     tanks: [{ medicine: "metoprolol", label: "Blood pressure", drain: 0.3, dose: 0.3, band: STANDARD_BAND, key: "Space" }],
     tips: [
       { when: "start", anchor: "tank", text: "Tap the beaker to take a pill", until: "pill" },
-      { when: "time:2.5", anchor: "tank", text: "The green band is the dose that works" },
+      { when: "time:2.5", anchor: "band", text: "The green band is the dose that works" },
       { when: "nearTop", anchor: "liver", text: "Wait while the enzymes drain it" },
     ],
     hint: "The enzymes need time to clear each pill. Wait for the level to drop toward the bottom of the band before the next tap.",
@@ -233,7 +233,7 @@ const LEVELS = [
   },
   {
     world: 1, title: "The long way in", duration: 24,
-    tanks: [{ medicine: "felodipine", label: "Blood pressure", drain: 0.3, dose: 2.0, gate: 0.85, gateVariance: 0.5, band: [0.38, 0.7], key: "Space" }],
+    tanks: [{ medicine: "felodipine", label: "Blood pressure", drain: 0.3, dose: 1.0, gate: 0.74, gateVariance: 0.64, band: [0.38, 0.7], key: "Space" }],
     tips: [
       { when: "start", anchor: "gate", text: "Enzymes in the gut and liver bite each pill first" },
       { when: "time:4", anchor: "tank", text: "Each bite is a different size" },
@@ -242,7 +242,7 @@ const LEVELS = [
     learned: "first-pass metabolism", reveal: "Swallowed pills pass through the gut wall and the liver before they reach your blood. Both take a bite out of each dose.",
   },
   {
-    world: 2, title: "Slower, then faster", duration: 36, turnover: 0.09,
+    world: 2, title: "Slower, then faster", duration: 36, turnover: 0.09, required: 0.95,
     tanks: [{ medicine: "midazolam", label: "Sedative", drain: 0.3, dose: 0.3, band: [0.38, 0.7], key: "Space" }],
     cycle: {
       start: [2, 3], first: 0, gap: [2, 4],
