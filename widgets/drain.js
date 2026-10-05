@@ -659,6 +659,7 @@ function mountDrain(root, host = {}) {
   ];
   const SHORTCUTS = { Space: "Space", Digit1: "1", Digit2: "2", Digit3: "3" };
   const TOKEN_GAP = 30;
+  const PASS_SCORE = 0.75;
   const calmMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const byId = (id) => root.querySelector(`#${id}`);
@@ -944,7 +945,7 @@ function mountDrain(root, host = {}) {
     refreshHits();
     const survived = state.outcome === "done";
     const percent = Physics.score(state, level);
-    const passed = survived && percent >= (level.required ?? 0);
+    const passed = survived && percent >= requiredScore();
     const stars = passed ? starCount(percent) : 0;
     best[levelIndex] = Math.max(best[levelIndex] ?? 0, stars);
     saveBest();
@@ -956,11 +957,15 @@ function mountDrain(root, host = {}) {
     }
   }
 
+  function requiredScore() {
+    return level.required ?? PASS_SCORE;
+  }
+
   function starCount(percent) {
-    if (percent >= 0.88) return 3;
-    if (percent >= 0.75) return 2;
-    if (percent >= 0.55) return 1;
-    return 0;
+    const spare = 1 - requiredScore();
+    if (percent >= requiredScore() + spare * 0.8) return 3;
+    if (percent >= requiredScore() + spare * 0.5) return 2;
+    return 1;
   }
 
   function starsMarkup(count) {
@@ -968,7 +973,7 @@ function mountDrain(root, host = {}) {
   }
 
   function resultTitle({ survived, passed, stars }) {
-    const titles = ["You made it, barely", "Good", "Steady hands", "Perfect rhythm"];
+    const titles = ["", "You made it", "Steady hands", "Perfect rhythm"];
     if (passed) return titles[stars];
     return survived ? "Not quite" : "Overdose";
   }
@@ -976,7 +981,7 @@ function mountDrain(root, host = {}) {
   function resultText({ survived, passed }, rounded) {
     if (passed) return `You just learned about <strong>${level.learned}</strong>. ${level.reveal}`;
     if (!survived) return overdoseExplanation();
-    return `This level needs ${Math.round(level.required * 100)}% in the green. You got ${rounded}%. <span class="reveal-hint">${level.hint ?? level.reveal}</span>`;
+    return `This level needs ${Math.round(requiredScore() * 100)}% in the green. You got ${rounded}%. <span class="reveal-hint">${level.hint ?? level.reveal}</span>`;
   }
 
   function showResult(outcome) {
