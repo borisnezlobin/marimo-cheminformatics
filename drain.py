@@ -244,8 +244,7 @@ def _(ICONS, SPRITES, inhibition, mo):
             r"""
             The row of molecules at the bottom of the game is a family of liver enzymes called
             cytochrome P450 (CYP for short, pronounced "sip"). Each enzyme grabs a drug molecule.
-            Then it sticks an oxygen atom onto it! That oxygen makes the drug easier to dissolve
-            in water, so your kidneys can flush it out.
+            Then it sticks an oxygen atom onto it! That oxygen makes the drug easier to dissolve in water. Your kidneys can then flush it out.
 
             The red patch in the middle of each drawing is called the heme. It holds the iron atom
             that does the oxygen-sticking. Many blocking drugs work by parking right on top of that
@@ -256,8 +255,7 @@ def _(ICONS, SPRITES, inhibition, mo):
             spreads through your body, but the game ignores that.) The first level keeps you
             tapping because its medicine has a short half-life.
 
-            CYP3A4 alone breaks down about half of all medicines, so three of the four levels run
-            on it.
+            CYP3A4 alone breaks down about half of all medicines. That's why three of the four levels run on it.
             """
         ),
         mo.Html(
@@ -326,7 +324,7 @@ def _(direct_potency, mo):
     concentration that cuts the enzyme's speed in half is called the **IC50**. For example,
     paroxetine (an antidepressant) half-blocks CYP2D6 at {10 ** (6 - _paroxetine):.1f} micromolar.
 
-    IC50s run from tiny to huge, so labs usually put them on a log scale called **pIC50**.
+    Because IC50s run from tiny to huge, labs usually put them on a log scale called **pIC50**.
     It works like the pH scale: every step up means you need ten times less drug to do the
     same job. Paroxetine's pIC50 is {_paroxetine:.2f}. A higher pIC50 means a stronger blocker!
 
@@ -575,7 +573,7 @@ def _(
     _ritonavir_note = (
         f"Ritonavir's IC50 shrank about {10 ** float(_highlight.after.iloc[0] - _highlight.direct.iloc[0]):.0f}-fold after the wait."
         if len(_highlight)
-        else "OpenADMET didn't run this test on ritonavir for CYP3A4, so it has no point here."
+        else "OpenADMET didn't run this test on ritonavir for CYP3A4. That's why it has no point here."
     )
     mo.vstack([
         mo.md(
@@ -620,7 +618,7 @@ def _(mo):
     ## First-pass metabolism
 
     A swallowed pill has to get through your gut wall and then your liver before it reaches
-    the rest of your blood. Both are packed with CYP3A4, so both take a bite. That bite is
+    the rest of your blood. Both are packed with CYP3A4. Both take a bite! That bite is
     called **first-pass metabolism**. Take felodipine, the blood-pressure pill in the second
     level. According to its FDA label, only about 20% of each tablet makes it into your
     blood! The size of the bite also changes from person to person and from day to day.
@@ -686,8 +684,7 @@ def _(
         mo.md(
             f"""
             Ritonavir left only {_ritonavir:.0f}% of CYP3A4's activity. Just {_stronger:.0%} of the
-            {len(_cyp3a4):,} screened compounds left less. Felodipine left even less! CYP3A4 also
-            breaks felodipine down, so the two molecules compete for the same enzyme.
+            {len(_cyp3a4):,} screened compounds left less. Felodipine left even less! CYP3A4 also breaks felodipine down. The two molecules end up competing for the same enzyme.
             """
         ),
     ])
@@ -737,10 +734,8 @@ def _(POPULATION, alt, drugs, finish_chart, measured, mo, named_markers, pxr):
         mo.md(
             f"""
             Rifampicin (a tuberculosis antibiotic) is the textbook example of an inducer. OpenADMET
-            measured it twice, getting {_rif_low:.2f} one time and {_rif_high:.2f} the other, so the
-            chart marks the average. Only {_beat_high} of the {len(_scored):,} compounds beat its
-            higher result. {_beat_low} beat its lower one! Two runs of the same compound can differ
-            that much, so don't read too much into small gaps on this chart.
+            measured it twice, getting {_rif_low:.2f} one time and {_rif_high:.2f} the other. The chart marks the average. Only {_beat_high} of the {len(_scored):,} compounds beat its
+            higher result. {_beat_low} beat its lower one! Two runs of the same compound can differ that much! Don't read too much into small gaps on this chart.
 
             Ritonavir scores {_ritonavir:.2f}, higher than {float((_scored.pEC50 < _ritonavir).mean()):.0%} of
             them. So ritonavir blocks CYP3A4 while also telling the liver to make more of it. Talk
@@ -818,14 +813,13 @@ def _(AMBER, BLUE, INK, MUTED, alt, mo, screen, tastes, unparsed):
             A **basic amine** is a nitrogen atom that picks up a positive charge inside your body.
             Basic amines raise the share of CYP2D6 blockers from {_rate('Basic amine', 'CYP2D6', 'Without it'):.0%} to
             {_rate('Basic amine', 'CYP2D6', 'With the feature'):.0%}! CYP2D6's pocket holds a negatively
-            charged amino acid. Opposite charges attract, so amines stick. CYP1A2 has a narrow,
+            charged amino acid. Opposite charges attract. That's what makes amines stick. CYP1A2 has a narrow,
             flat pocket instead. Flat slabs of aromatic rings (rings of carbon like the one in
             benzene) block it more often.
 
             Big molecules (over 400 daltons, the unit chemists use for molecular weight) block
             CYP3A4 {_rate('Large (over 400 Da)', 'CYP3A4', 'With the feature'):.0%} of the time, against
-            {_rate('Large (over 400 Da)', 'CYP3A4', 'Without it'):.0%} for smaller ones. CYP3A4 has the
-            roomiest pocket of the four, so it can fit bigger molecules.
+            {_rate('Large (over 400 Da)', 'CYP3A4', 'Without it'):.0%} for smaller ones. CYP3A4 has the roomiest pocket of the four. Bigger molecules fit inside it.
 
             Carboxylic acids (the acidic group in vinegar) cut blocking for all four enzymes, even
             CYP2C9. That's surprising, because textbooks describe CYP2C9 as preferring acids! The
@@ -924,7 +918,7 @@ def _(
             return exact.iloc[0], notes + [f"Found in OpenADMET's inhibition set as {exact.iloc[0].Molecule_Name}."]
         cousins = index[index.block == key.split("-")[0]]
         if len(cousins):
-            notes.append(f"{cousins.iloc[0]['name']} has the same atoms and bonds but a different 3D arrangement. Its numbers may not apply, as quinine and quinidine showed, so they are not used.")
+            notes.append(f"{cousins.iloc[0]['name']} has the same atoms and bonds but a different 3D arrangement. Its numbers may not apply (remember quinine and quinidine). The tool leaves them out.")
         notes.append("This exact structure was not measured. Below are the most similar compounds that were, scored from 0 to 1 with the chirality-aware fingerprint. Even a close match can differ a lot, as quinine and quinidine showed.")
         return None, notes
 
@@ -997,8 +991,7 @@ def _(clash, drug_picker, lookup, lookup_svg, mo, smiles_box):
         mo.md(
             r"""
             Try this: set the second slider to 80%, then drag the blocker as high as it goes. The
-            exposure increase stops just under 5 times! The other medicine still sends a fifth of
-            its clearance through other routes, so it can always leave that way. In general, no
+            exposure increase stops just under 5 times! The other medicine still sends a fifth of its clearance through other routes. It can always leave that way. In general, no
             blocker can push exposure past $1/(1-f)$. FDA draws its "sensitive" line in the same
             place. It calls a medicine sensitive when a strong blocker raises its exposure 5 times
             or more. That only happens when $f$ is at least 80%.
